@@ -1,5 +1,6 @@
 package cs4330.cs.utep.edu;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.LayoutRes;
@@ -29,6 +30,7 @@ public class ItemAdapter extends ArrayAdapter<Item> {
         this.items = items;
     }
 
+    @SuppressLint("SetTextI18n") // This was added by the IDE
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -44,6 +46,8 @@ public class ItemAdapter extends ArrayAdapter<Item> {
 
         TextView price = (TextView) listItem.findViewById(R.id.itemPrice);
         price.setText("$"+item.getPrice()+" USD");
+
+        //TO DO:  Add link
 
         return listItem;
 

@@ -1,45 +1,76 @@
 package cs4330.cs.utep.edu;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Context;
+import android.content.Intent;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
+import android.support.v4.app.FragmentActivity;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+
+import com.google.gson.Gson;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 
 import cs4330.cs.utep.edu.models.Item;
+import cs4330.cs.utep.edu.models.JSONReader;
+import cs4330.cs.utep.edu.models.PriceFinder;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity {
 
-//    private TextView mainAppTitle;
-//    private Button changeButton;
-    private ArrayList<Item> items = new ArrayList<Item>();
+    private ArrayList<PriceFinder> items = new ArrayList<PriceFinder>();
     private ListView itemsList;
-    private ItemAdapter itemAdapter;
+    private PriceFinderAdapter itemAdapter;
+    private static Context ctx;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        MainActivity.ctx = getApplicationContext();
 
-        this.itemsList = findViewById(R.id.items_list); // Get Items List View
-        ArrayList<Item> items = new ArrayList<Item>();
 
-        for (int i = 0; i < 5; i++) {
-            items.add(new Item(100*i+10, "Item"+i+"", "http://google.com"));
+        this.itemsList = (ListView) findViewById(R.id.items_list); // Get Items List View
+        ArrayList<PriceFinder> items = new ArrayList<PriceFinder>();
+//
+//        for (int i = 0; i < 5; i++) {
+//            items.add(new PriceFinder( "Item"+i+"", "http://google.com", 100*i+10));
+//        }
+
+        JSONReader jr = new JSONReader(ctx,"items.json");
+        JSONArray ja = jr.getArray();
+
+        for(int k = 0; k < ja.size(); k++) {
+            JSONObject jo = (JSONObject) ja.get(k);
+            items.add(new PriceFinder( jo.get("name").toString(), jo.get("url").toString(), Double.valueOf(jo.get("price").toString())));
         }
 
-        itemAdapter = new ItemAdapter(this, items);
+//        while(jr.getIterator().hasNext()) {
+//            Log.i("##", "onCreate: "+jr.getIterator().next());
+//        }
+
+        itemAdapter = new PriceFinderAdapter(this, items);
         itemsList.setAdapter(itemAdapter);
+        Intent itemIntent = new Intent(this, showItem.class);
 
+        itemsList.setOnItemClickListener((arg0, arg1, position, arg3) -> {
+            Gson gson = new Gson();
+            String itemDataAsString = gson.toJson(items.get(position)); // Serialize Object to pass it
+            itemIntent.putExtra("itemDataAsString", itemDataAsString);
+//            itemIntent.putExtra("ITEM_NAME", items.get(position).getName());
+//            itemIntent.putExtra("ITEM_URL", items.get(position).getUrl());
+//            itemIntent.putExtra("OP", items.get(position).getPrice());
+//            items.get(position).randomPrice();
+//            itemIntent.putExtra("NP", items.get(position).getNewPrice());
+            startActivity(itemIntent);
+        });
 
-//        this.mainAppTitle = findViewById(R.id.mainTitle);
-//        this.changeButton = findViewById(R.id.pressBtn);
-
-//        changeButton.setOnClickListener( view -> {
-//            mainAppTitle.setText("Changed!");
-//            Log.i("values","clicked!");
-//        });
 
     }
 }

@@ -3,6 +3,7 @@ package cs4330.cs.utep.edu.models;
 public class Item {
 
     private double price;
+    private double newPrice;
     private String name;
     private String link;
 
@@ -14,6 +15,7 @@ public class Item {
         this.link = link;
     }
 
+    /** Gets **/
     public String getName() {
         return this.name;
     }
@@ -24,5 +26,15 @@ public class Item {
 
     public double getPrice(){
         return this.price;
+    }
+
+    public double getNewPrice(){
+        return this.newPrice;
+    }
+
+    /** Sets **/
+
+    public void setNewPrice(double newPrice) {
+        this.newPrice = newPrice;
     }
 }

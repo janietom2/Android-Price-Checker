@@ -17,14 +17,15 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import cs4330.cs.utep.edu.models.Item;
+import cs4330.cs.utep.edu.models.PriceFinder;
 
-public class ItemAdapter extends ArrayAdapter<Item> {
+public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
 
     private Context context;
-    private ArrayList<Item> items;
+    private ArrayList<PriceFinder> items;
     private static LayoutInflater inflater = null;
 
-    public ItemAdapter(@NonNull Context context, @LayoutRes ArrayList<Item> items) {
+    public PriceFinderAdapter(@NonNull Context context, @LayoutRes ArrayList<PriceFinder> items) {
         super(context, 0, items);
         this.context = context;
         this.items = items;
@@ -39,7 +40,7 @@ public class ItemAdapter extends ArrayAdapter<Item> {
         if(listItem == null)
             listItem = LayoutInflater.from(context).inflate(R.layout.items_list,parent,false);
 
-        Item item = items.get(position); // Get current item(object) on the ArrayList of items
+        PriceFinder item = items.get(position); // Get current item(object) on the ArrayList of items
 
         TextView name = (TextView) listItem.findViewById(R.id.itemName);
         name.setText(item.getName());

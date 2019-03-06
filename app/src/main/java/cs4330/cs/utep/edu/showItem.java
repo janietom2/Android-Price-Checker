@@ -1,57 +1,100 @@
 package cs4330.cs.utep.edu;
 
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.gson.Gson;
-import org.w3c.dom.Text;
+
 import java.text.DecimalFormat;
 import cs4330.cs.utep.edu.models.PriceFinder;
 
-public class showItem extends FragmentActivity {
 
+//TODO - save data in case of orientation change
+
+public class showItem extends FragmentActivity {
     TextView itemTitle;
     TextView newPrice;
     TextView oldPrice;
     TextView diff;
     EditText itemUrl;
+
     Button checkPrice;
+    Button openWebpage;
+    Button editItem;
+    Button deleteItem;
+
+    PriceFinder item;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_show_item);
+        setContentView(R.layout.activity_item_detail);
 
         DecimalFormat f = new DecimalFormat("##.00");
-        this.itemTitle = (TextView) findViewById(R.id.item_name);
-        this.oldPrice = (TextView) findViewById(R.id.oldPrice);
-        this.newPrice = (TextView) findViewById(R.id.newPrice);
-        this.itemUrl = (EditText) findViewById(R.id.itemUrl);
-        this.checkPrice = (Button) findViewById(R.id.refreshButton);
-        this.diff = (TextView) findViewById(R.id.diff);
 
+        this.itemTitle = (TextView) findViewById(R.id.textViewNameItem);
+        this.oldPrice = (TextView) findViewById(R.id.textViewInitialPriceItem);
+        this.newPrice = (TextView) findViewById(R.id.textViewCurrentPriceItem);
+        this.itemUrl = (EditText) findViewById(R.id.editTextSourceItem);
+        this.checkPrice = (Button) findViewById(R.id.buttonReloadItem);
+        this.diff = (TextView) findViewById(R.id.textViewPriceChangeItem);
+        this.openWebpage = (Button) findViewById(R.id.btnWebItem);
+        this.editItem = (Button) findViewById(R.id.btnEditItem);
+        this.deleteItem = (Button) findViewById(R.id.btnDeleteItem);
+
+        openWebpage.setOnClickListener(this::WebClicked);
+        editItem.setOnClickListener(this::editClicked);
+        deleteItem.setOnClickListener(this::deleteClicked);
 
         Gson gson = new Gson();
         String itemDataAsString = getIntent().getStringExtra("itemDataAsString");
-        PriceFinder item = gson.fromJson(itemDataAsString, PriceFinder.class);
+        item = gson.fromJson(itemDataAsString, PriceFinder.class);
 
         this.itemTitle.setText(item.getName());
         String op = String.valueOf(item.getPrice());
-        this.oldPrice.setText(op);
-//        String nPrice = f.format(item.getNewPrice());
-//        String np = String.valueOf(f.format();
-        this.newPrice.setText("0.00");
+        this.oldPrice.setText("Initial price: $" + op);
+        this.newPrice.setText("Current Price: " + op);
         this.itemUrl.setText(item.getUrl());
+        this.diff.setText("Price change: 0.00%");
 
 
         checkPrice.setOnClickListener( view -> {
             item.randomPrice();
-            this.newPrice.setText(f.format(item.getNewPrice()));
-            this.diff.setText(f.format(item.calculatePrice())+"%");
-        });
+            this.newPrice.setText("Current price: " + f.format(item.getNewPrice()));
+            String s;
 
+            if(item.changePositive()) {
+                diff.setTextColor(Color.rgb(200, 0, 0));
+                s = "+";
+            }
+            else {
+                diff.setTextColor(Color.rgb(0,200,0));
+                s = "-";
+            }
+            diff.setText("Price change: " + s + f.format(item.calculatePrice())+"%");
+        });
+    }
+
+    protected void WebClicked(View view){
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(item.getUrl()));
+        startActivity(browserIntent);
+    }
+
+    //TODO - connect with delete method
+    protected void deleteClicked(View view){
+        Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+    }
+
+    //TODO - connect with edit method
+    protected void editClicked(View view){
+        Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
     }
 }

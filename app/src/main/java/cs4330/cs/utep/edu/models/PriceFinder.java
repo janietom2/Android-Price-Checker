@@ -35,7 +35,12 @@ public class PriceFinder {
     }
 
     public double calculatePrice() {
-        return ((this.item.getNewPrice() * 100) / this.item.getPrice()) / 10;
+      //  return ((this.item.getNewPrice() * 100) / this.item.getPrice()) / 10;
+        return (this.item.getNewPrice()*100/this.item.getPrice())-100;
+    }
+
+    public boolean changePositive(){
+        return item.getNewPrice() > item.getPrice();
     }
 
 

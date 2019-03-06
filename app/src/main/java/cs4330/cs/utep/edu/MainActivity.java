@@ -6,10 +6,15 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -22,7 +27,7 @@ import cs4330.cs.utep.edu.models.Item;
 import cs4330.cs.utep.edu.models.JSONReader;
 import cs4330.cs.utep.edu.models.PriceFinder;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
 
     private ArrayList<PriceFinder> items = new ArrayList<PriceFinder>();
     private ListView itemsList;
@@ -34,7 +39,6 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         MainActivity.ctx = getApplicationContext();
-
 
         this.itemsList = (ListView) findViewById(R.id.items_list); // Get Items List View
         ArrayList<PriceFinder> items = new ArrayList<PriceFinder>();
@@ -72,5 +76,39 @@ public class MainActivity extends FragmentActivity {
         });
 
 
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu,menu);
+        return true;
+    }
+
+    //TODO - connect with methods
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //respond to menu item selection
+        switch (item.getItemId()) {
+            case R.id.search:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.filter:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.add:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.reload:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.settings:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+        }
+        return false;
     }
 }

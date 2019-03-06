@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -63,6 +64,9 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
         itemsList.setAdapter(itemAdapter);
         Intent itemIntent = new Intent(this, showItem.class);
 
+        registerForContextMenu(itemsList);
+        itemsList.setOnCreateContextMenuListener(this);
+
         itemsList.setOnItemClickListener((arg0, arg1, position, arg3) -> {
             Gson gson = new Gson();
             String itemDataAsString = gson.toJson(items.get(position)); // Serialize Object to pass it
@@ -74,15 +78,51 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
 //            itemIntent.putExtra("NP", items.get(position).getNewPrice());
             startActivity(itemIntent);
         });
-
-
     }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.context_menu, menu);
+    }
+
+
 
     public boolean onCreateOptionsMenu(Menu menu) {
         // super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu,menu);
         return true;
+    }
+
+    //TODO - connect with methods
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        int itemPosition = info.position;
+        Toast.makeText(getBaseContext(), "position" + itemPosition, Toast.LENGTH_SHORT).show();
+
+        switch (item.getItemId()) {
+            case R.id.edit_item:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.delete_item:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.reload_item:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.open_detail:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.webpage_item:
+                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
     }
 
     //TODO - connect with methods

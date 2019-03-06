@@ -7,6 +7,11 @@
     <string name="source">Source:</string>
     <string name="url">Copy URL</string>
     <string name="calculateButton">Reload price</string>
-    <string name="edit">edit</string>
+    <string name="edit">Edit</string>
     <string name="delete">delete</string>
+    <string name="add_item">Add</string>
+    <string name="reload_price">Reload price</string>
+    <string name="edit_item">Edit</string>
+    <string name="open_detail">Show detail</string>
+    <string name="open_webpage">Open webpage</string>
 </resources>

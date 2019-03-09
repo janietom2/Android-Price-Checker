@@ -25,6 +25,7 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
     private ArrayList<PriceFinder> items;
     private static LayoutInflater inflater = null;
 
+
     public PriceFinderAdapter(@NonNull Context context, @LayoutRes ArrayList<PriceFinder> items) {
         super(context, 0, items);
         this.context = context;

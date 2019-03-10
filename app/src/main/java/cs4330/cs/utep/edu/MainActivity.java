@@ -22,18 +22,21 @@ import com.google.gson.Gson;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import cs4330.cs.utep.edu.models.Item;
+import cs4330.cs.utep.edu.models.ItemManager;
 import cs4330.cs.utep.edu.models.JSONReader;
 import cs4330.cs.utep.edu.models.PriceFinder;
 
-public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<PriceFinder> items = new ArrayList<PriceFinder>();
+    private ItemManager itm;
     private ListView itemsList;
     private PriceFinderAdapter itemAdapter;
     private static Context ctx;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,26 +44,35 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
         setContentView(R.layout.activity_main);
         MainActivity.ctx = getApplicationContext();
 
+        this.itm = new ItemManager();
+        this.itm.setFilename("items.json");
         this.itemsList = (ListView) findViewById(R.id.items_list); // Get Items List View
-        ArrayList<PriceFinder> items = new ArrayList<PriceFinder>();
+//        ArrayList<PriceFinder> items = new ArrayList<PriceFinder>();
+
 //
-//        for (int i = 0; i < 5; i++) {
-//            items.add(new PriceFinder( "Item"+i+"", "http://google.com", 100*i+10));
-//        }
-
-        JSONReader jr = new JSONReader(ctx,"items.json");
-        JSONArray ja = jr.getArray();
-
-        for(int k = 0; k < ja.size(); k++) {
-            JSONObject jo = (JSONObject) ja.get(k);
-            items.add(new PriceFinder( jo.get("name").toString(), jo.get("url").toString(), Double.valueOf(jo.get("price").toString())));
+        for (int i = 0; i < 5; i++) {
+            try {
+                itm.addItem(new PriceFinder( "Item"+i+"", "http://google.com", 100*i+10));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
+
+//
+//        JSONReader jr = new JSONReader(ctx,"items.json");
+//        JSONArray ja = jr.getArray();
+//
+//        for(int k = 0; k < ja.size(); k++) {
+//            JSONObject jo = (JSONObject) ja.get(k);
+//            items.add(new PriceFinder( jo.get("name").toString(), jo.get("url").toString(), Double.valueOf(jo.get("price").toString())));
+//        }
 
 //        while(jr.getIterator().hasNext()) {
 //            Log.i("##", "onCreate: "+jr.getIterator().next());
 //        }
 
-        itemAdapter = new PriceFinderAdapter(this, items);
+        itemAdapter = new PriceFinderAdapter(this, itm.getList());
         itemsList.setAdapter(itemAdapter);
         Intent itemIntent = new Intent(this, showItem.class);
 
@@ -69,13 +81,8 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
 
         itemsList.setOnItemClickListener((arg0, arg1, position, arg3) -> {
             Gson gson = new Gson();
-            String itemDataAsString = gson.toJson(items.get(position)); // Serialize Object to pass it
+            String itemDataAsString = gson.toJson(itm.getList().get(position)); // Serialize Object to pass it
             itemIntent.putExtra("itemDataAsString", itemDataAsString);
-//            itemIntent.putExtra("ITEM_NAME", items.get(position).getName());
-//            itemIntent.putExtra("ITEM_URL", items.get(position).getUrl());
-//            itemIntent.putExtra("OP", items.get(position).getPrice());
-//            items.get(position).randomPrice();
-//            itemIntent.putExtra("NP", items.get(position).getNewPrice());
             startActivity(itemIntent);
         });
     }
@@ -109,7 +116,15 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
                 Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.delete_item:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                  PriceFinder pf = new PriceFinder();
+                  pf = this.itm.getItem(1);
+                    itemAdapter.notifyDataSetChanged();
+                try {
+                    this.itm.removeItem(pf);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return true;
             case R.id.reload_item:
                 Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();

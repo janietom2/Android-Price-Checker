@@ -14,4 +14,9 @@
     <string name="edit_item">Edit</string>
     <string name="open_detail">Show detail</string>
     <string name="open_webpage">Open webpage</string>
+    <string name="dialog_delete_message">Are you sure you want to delete this item?</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+    <string name="deleteDialogTitle">Delete</string>
+    <string name="editDialogTitle">Edit Item</string>
 </resources>

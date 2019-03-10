@@ -61,7 +61,7 @@ public class showItem extends FragmentActivity {
         this.itemTitle.setText(item.getName());
         String op = String.valueOf(item.getPrice());
         this.oldPrice.setText("Initial price: $" + op);
-        this.newPrice.setText("Current Price: " + op);
+        this.newPrice.setText("Current Price: " + String.valueOf(item.getNewPrice()));
         this.itemUrl.setText(item.getUrl());
         this.diff.setText("Price change: 0.00%");
 

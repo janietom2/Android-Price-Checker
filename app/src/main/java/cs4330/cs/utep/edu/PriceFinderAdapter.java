@@ -3,6 +3,7 @@ package cs4330.cs.utep.edu;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,6 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import cs4330.cs.utep.edu.models.Item;
@@ -47,6 +49,21 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
 
         TextView price = (TextView) listItem.findViewById(R.id.itemPrice);
         price.setText("$"+item.getPrice()+" USD");
+
+
+        DecimalFormat f = new DecimalFormat("##.00");
+        String s;
+        TextView newPrice = (TextView) listItem.findViewById(R.id.itemPriceNew);
+
+        if(item.changePositive()) {
+            newPrice.setTextColor(Color.rgb(200, 0, 0));
+            s = "+";
+        }
+        else {
+            newPrice.setTextColor(Color.rgb(0,200,0));
+            s = "-";
+        }
+        newPrice.setText("$" + f.format(item.getNewPrice()) + " USD (" + s + f.format(item.calculatePrice())+"%)");
 
         //TO DO:  Add link
 

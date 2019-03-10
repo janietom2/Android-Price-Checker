@@ -11,6 +11,7 @@ public class Item {
 
     public Item(double price, String name, String link) {
         this.price = price;
+        this.newPrice = price;
         this.name = name;
         this.link = link;
     }

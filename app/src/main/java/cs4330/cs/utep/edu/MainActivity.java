@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         Log.i("JSON", "onCreate: "+text);
-        if(!text.isEmpty()){
+        if(text != null){
             tmp = gson.fromJson(text, new TypeToken<ArrayList<PriceFinder>>(){}.getType());
             tmp.forEach(x -> {
                 itm.addItem(x);

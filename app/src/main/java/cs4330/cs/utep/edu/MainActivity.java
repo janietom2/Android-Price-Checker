@@ -2,12 +2,9 @@ package cs4330.cs.utep.edu;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,25 +13,19 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import com.google.gson.Gson;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
 import java.util.ArrayList;
-
-import cs4330.cs.utep.edu.models.Item;
 import cs4330.cs.utep.edu.models.JSONReader;
 import cs4330.cs.utep.edu.models.PriceFinder;
 
-public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCompleteListener {
 
     private ArrayList<PriceFinder> items = new ArrayList<PriceFinder>();
     private ListView itemsList;
     private PriceFinderAdapter itemAdapter;
     private static Context ctx;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +50,6 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
 //        while(jr.getIterator().hasNext()) {
 //            Log.i("##", "onCreate: "+jr.getIterator().next());
 //        }
-
         itemAdapter = new PriceFinderAdapter(this, items);
         itemsList.setAdapter(itemAdapter);
         Intent itemIntent = new Intent(this, showItem.class);
@@ -78,6 +68,7 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
 //            itemIntent.putExtra("NP", items.get(position).getNewPrice());
             startActivity(itemIntent);
         });
+        itemAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -102,17 +93,20 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         int itemPosition = info.position;
-        Toast.makeText(getBaseContext(), "position" + itemPosition, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), "size = " + items.size(), Toast.LENGTH_SHORT).show();
 
         switch (item.getItemId()) {
             case R.id.edit_item:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                showEditDialog(itemPosition);
                 return true;
             case R.id.delete_item:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                showDeleteDialog();
                 return true;
             case R.id.reload_item:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                setValues(itemPosition);
+               // items.get(itemPosition).randomPrice();
+               // TextView newPrice = findViewById(R.id.itemPriceNew);
+               // newPrice.setText(f.format(items.get(itemPosition).getNewPrice()));
                 return true;
             case R.id.open_detail:
                 Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
@@ -123,6 +117,12 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
             default:
                 return super.onContextItemSelected(item);
         }
+    }
+
+    public void setValues(int position){
+        Toast.makeText(getBaseContext(), "position = " + itemAdapter.getItem(position).getName(), Toast.LENGTH_SHORT).show();
+        itemAdapter.getItem(position).randomPrice();
+        itemAdapter.notifyDataSetChanged();
     }
 
     //TODO - connect with methods
@@ -138,7 +138,7 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
                 return true;
 
             case R.id.add:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                showAddDialog();
                 return true;
 
             case R.id.reload:
@@ -150,5 +150,38 @@ public class MainActivity extends /*FragmentActivity*/ AppCompatActivity {
                 return true;
         }
         return false;
+    }
+
+    public void showDeleteDialog(){
+        FragmentManager fm = getSupportFragmentManager();
+        DeleteDialog deleteDialogFragment = new DeleteDialog();
+        deleteDialogFragment.show(fm, "delete_item");
+
+    }
+
+    public void showAddDialog(){
+        FragmentManager fm = getSupportFragmentManager();
+        ЕditDialog editDialogFragment = new ЕditDialog();
+        editDialogFragment.show(fm, "edit_item");
+    }
+
+    public void showEditDialog(int position){
+        FragmentManager fm = getSupportFragmentManager();
+        ЕditDialog editDialogFragment = new ЕditDialog();
+        Bundle args = new Bundle();
+        args.putInt("position", position);
+        args.putString("itemName", itemAdapter.getItem(position).getName());
+        args.putString("itemUrl", itemAdapter.getItem(position).getUrl());
+        editDialogFragment.setArguments(args);
+        editDialogFragment.show(fm, "edit_item");
+
+    }
+
+    @Override
+    public void onComplete(int position, String name, String url) {
+        //editItem(Item it, double price, String name, String weblink)
+     //   items.editItem(itemAdapter.getItem(position), itemAdapter.getItem(position).getNewPrice(), name, url);
+        Toast.makeText(getBaseContext(), position + " new name: " + name + "url " + url, Toast.LENGTH_SHORT).show();
+
     }
 }

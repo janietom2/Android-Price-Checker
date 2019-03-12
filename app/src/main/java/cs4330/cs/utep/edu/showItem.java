@@ -1,5 +1,6 @@
 package cs4330.cs.utep.edu;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -84,8 +85,15 @@ public class showItem extends FragmentActivity {
     }
 
     protected void WebClicked(View view){
+        String url = item.getUrl();
+        if (!url.startsWith("http://") && !url.startsWith("https://"))
+            url = "http://" + url;
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(item.getUrl()));
-        startActivity(browserIntent);
+        try {
+            startActivity(browserIntent);
+        } catch (ActivityNotFoundException e){
+             Toast.makeText(getBaseContext(), "Webpage " + url + "does not exist", Toast.LENGTH_SHORT).show();
+        }
     }
 
     //TODO - connect with delete method

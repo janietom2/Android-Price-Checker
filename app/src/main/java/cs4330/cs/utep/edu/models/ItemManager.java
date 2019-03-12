@@ -1,6 +1,8 @@
 package cs4330.cs.utep.edu.models;
 
 import android.content.Context;
+import android.util.Log;
+
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.ArrayList;

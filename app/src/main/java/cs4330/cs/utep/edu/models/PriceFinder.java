@@ -44,4 +44,20 @@ public class PriceFinder extends Item {
     }
 
 
+    public void setPrice(double price){
+        item.setPrice(price);
+    }
+
+    public void setName(String name) {
+        item.setName(name);
+    }
+
+    public void setLink(String link){item.setLink(link);
+    }
+
+    public void setNewPrice(double newPrice) {
+        item.setNewPrice(newPrice);
+    }
+
+
 }

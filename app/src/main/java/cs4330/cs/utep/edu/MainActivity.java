@@ -1,10 +1,13 @@
 package cs4330.cs.utep.edu;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -24,21 +27,18 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import cs4330.cs.utep.edu.models.ItemManager;
 import cs4330.cs.utep.edu.models.PriceFinder;
 
-public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCompleteListener {
-
+public class MainActivity extends AppCompatActivity implements DeleteDialog.DeleteDialogListener {
     private ItemManager itm;
     private PriceFinderAdapter itemAdapter;
     private String FILE_NAME = "items.json";
     private Gson gson = new Gson();
     private String jsonText;
-
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -48,16 +48,18 @@ public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCom
         Context ctx = getApplicationContext();
         ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
 
-        this.itemsList = (ListView) findViewById(R.id.items_list); // Get Items List View
-        ArrayList<PriceFinder> items = new ArrayList<PriceFinder>();
-//
-//        for (int i = 0; i < 5; i++) {
-//            items.add(new PriceFinder( "Item"+i+"", "http://google.com", 100*i+10));
-//        }
+        this.itm = new ItemManager();
+        String text = null;
+        try {
+            text = load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ListView itemsList = (ListView) findViewById(R.id.items_list);
 
 
         Log.i("JSON", "onCreate: "+text);
-        if(!text.isEmpty()){
+        if(text != null){
             tmp = gson.fromJson(text, new TypeToken<ArrayList<PriceFinder>>(){}.getType());
             tmp.forEach(x -> {
                 itm.addItem(x);
@@ -66,22 +68,23 @@ public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCom
 
         itemAdapter = new PriceFinderAdapter(this, itm.getList());
         itemsList.setAdapter(itemAdapter);
-        Intent itemIntent = new Intent(this, showItem.class);
 
         registerForContextMenu(itemsList);
         itemsList.setOnCreateContextMenuListener(this);
 
         itemsList.setOnItemClickListener((arg0, arg1, position, arg3) -> {
-            String itemDataAsString = gson.toJson(itm.getList().get(position)); // Serialize Object to pass it
-            itemIntent.putExtra("itemDataAsString", itemDataAsString);
-//            itemIntent.putExtra("ITEM_NAME", items.get(position).getName());
-//            itemIntent.putExtra("ITEM_URL", items.get(position).getUrl());
-//            itemIntent.putExtra("OP", items.get(position).getPrice());
-//            items.get(position).randomPrice();
-//            itemIntent.putExtra("NP", items.get(position).getNewPrice());
-            startActivity(itemIntent);
+            itemClicked(position);
         });
         itemAdapter.notifyDataSetChanged();
+        itemAdapter.setNotifyOnChange(true);
+
+    }
+
+    public void itemClicked(int position){
+        Intent itemIntent = new Intent(this, showItem.class);
+        String itemDataAsString = gson.toJson(itm.getList().get(position)); // Serialize Object to pass it
+        itemIntent.putExtra("itemDataAsString", itemDataAsString);
+        startActivity(itemIntent);
     }
 
     @Override
@@ -100,78 +103,67 @@ public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCom
         return true;
     }
 
-    //TODO - connect with methods
+    //TODO - connect edit method
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         int itemPosition = info.position;
-        Toast.makeText(getBaseContext(), "size = " + items.size(), Toast.LENGTH_SHORT).show();
-
         switch (item.getItemId()) {
             case R.id.edit_item:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                showEditDialog(itemPosition);
                 return true;
             case R.id.delete_item:
-
-//                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
-                  PriceFinder pf = new PriceFinder();
-                  pf = this.itm.getItem(1);
-                  this.itm.removeItem(pf);
-                try {
-                    save();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                itemAdapter.notifyDataSetChanged();
+                showDeleteDialog(itemPosition);
                 return true;
             case R.id.reload_item:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                setValues(itemPosition);
                 return true;
             case R.id.open_detail:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                itemClicked(itemPosition);
                 return true;
             case R.id.webpage_item:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                String url = itemAdapter.getItem(itemPosition).getUrl();
+                if (!url.startsWith("http://") && !url.startsWith("https://"))
+                    url = "http://" + url;
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                try {
+                    startActivity(browserIntent);
+                } catch (ActivityNotFoundException e){
+                   // Toast.makeText(getBaseContext(), "Webpage " + url + "does not exist", Toast.LENGTH_SHORT).show();
+                }
                 return true;
             default:
                 return super.onContextItemSelected(item);
         }
     }
 
-    public void setValues(int position){
-        Toast.makeText(getBaseContext(), "position = " + itemAdapter.getItem(position).getName(), Toast.LENGTH_SHORT).show();
+    //TODO - save it to JSON so it is consistent with item detail
+    private void setValues(int position){
         itemAdapter.getItem(position).randomPrice();
         itemAdapter.notifyDataSetChanged();
     }
 
-    //TODO - connect with methods
+    private void reloadItems(){
+        for(int i = 0; i < itemAdapter.getSize(); i++){
+            setValues(i);
+        }
+    }
+
+    //TODO - implement search, filter and settings
     public boolean onOptionsItemSelected(MenuItem item) {
-        //respond to menu item selection
         switch (item.getItemId()) {
             case R.id.search:
                 Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
                 return true;
-
             case R.id.filter:
                 Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
                 return true;
-
             case R.id.add:
                 showAddDialog();
-                    PriceFinder pf = new PriceFinder("Mac Mini", "www.google.com", 500.50);
-                itm.addItem(pf);
-                try {
-                    save();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                itemAdapter.notifyDataSetChanged();
                 return true;
-
             case R.id.reload:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                reloadItems();
                 return true;
-
             case R.id.settings:
                 Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
                 return true;
@@ -179,17 +171,33 @@ public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCom
         return false;
     }
 
-    public void showDeleteDialog(){
+    public void showDeleteDialog(int position){
         FragmentManager fm = getSupportFragmentManager();
         DeleteDialog deleteDialogFragment = new DeleteDialog();
+        Bundle args = new Bundle();
+        args.putInt("position", position);
+        deleteDialogFragment.setArguments(args);
         deleteDialogFragment.show(fm, "delete_item");
-
     }
 
     public void showAddDialog(){
         FragmentManager fm = getSupportFragmentManager();
-        ЕditDialog editDialogFragment = new ЕditDialog();
-        editDialogFragment.show(fm, "edit_item");
+        AddDialog addDialogFragment = new AddDialog();
+        addDialogFragment.show(fm, "add_item");
+    }
+
+    public void addItem(String name, String source){
+        double MAX_PRICE = 20000.00;
+        double MIN_PRICE = 500.00;
+        double price = (Math.random() * (MAX_PRICE - MIN_PRICE) + 1 + MIN_PRICE);
+        PriceFinder pf = new PriceFinder(name, source, price);
+        itm.addItem(pf);
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        itemAdapter.notifyDataSetChanged();
     }
 
     public void showEditDialog(int position){
@@ -204,12 +212,15 @@ public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCom
 
     }
 
-    @Override
-    public void onComplete(int position, String name, String url) {
-        //editItem(Item it, double price, String name, String weblink)
-     //   items.editItem(itemAdapter.getItem(position), itemAdapter.getItem(position).getNewPrice(), name, url);
-        Toast.makeText(getBaseContext(), position + " new name: " + name + "url " + url, Toast.LENGTH_SHORT).show();
-
+    public void editItem(String name, String source, int position){
+        PriceFinder pf = this.itm.getItem(position);
+        this.itm.editItem(pf,this.itm.getItem(position).getPrice(), name, source);
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        itemAdapter.notifyDataSetChanged();
     }
 
     public void save() throws IOException {
@@ -219,7 +230,6 @@ public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCom
         try{
             fos = openFileOutput(FILE_NAME, MODE_PRIVATE);
             fos.write(jsonSerial.getBytes());
-            Toast.makeText(this, "Saved to"+ getFilesDir() + "/ " + FILE_NAME, Toast.LENGTH_LONG).show();
         }catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -234,10 +244,14 @@ public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCom
     public String load() throws IOException {
         FileInputStream fis = null;
 
-        fis = openFileInput(FILE_NAME);
+        try {
+            fis = openFileInput(FILE_NAME);
+        } catch(FileNotFoundException e){
+            Log.d("File not found", FILE_NAME);
+        }
         InputStreamReader isr =  new InputStreamReader(fis);
         BufferedReader br = new BufferedReader(isr);
-        StringBuilder sb = new StringBuilder();;
+        StringBuilder sb = new StringBuilder();
 
         while((this.jsonText = br.readLine()) != null) {
             sb.append(this.jsonText);
@@ -246,6 +260,17 @@ public class MainActivity extends AppCompatActivity implements ЕditDialog.OnCom
         return sb.toString();
     }
 
+    public void DeleteItemDialog(int position){
+        PriceFinder pf = new PriceFinder();
+        pf = this.itm.getItem(position);
+        this.itm.removeItem(pf);
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        itemAdapter.notifyDataSetChanged();
+    }
 
 
 }

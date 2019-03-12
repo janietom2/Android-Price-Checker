@@ -37,7 +37,6 @@ public class JSONReader {
     }
 
     public JSONReader(Context ctx, String fileName) {
-
         try{
 
             JSONObject helper = (JSONObject) parser.parse(loadJSONFromAsset(ctx, fileName));

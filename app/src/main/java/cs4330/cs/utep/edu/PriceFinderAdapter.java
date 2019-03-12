@@ -15,6 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -28,7 +29,7 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
     private static LayoutInflater inflater = null;
 
 
-    public PriceFinderAdapter(@NonNull Context context, @LayoutRes ArrayList<PriceFinder> items) {
+    public PriceFinderAdapter(@NonNull Context context, /*@LayoutRes*/ ArrayList<PriceFinder> items) {
         super(context, 0, items);
         this.context = context;
         this.items = items;
@@ -70,6 +71,10 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
 
         return listItem;
 
+    }
+
+    public int getSize(){
+        return items.size();
     }
 
 }

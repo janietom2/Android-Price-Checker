@@ -51,4 +51,8 @@ public class Item {
     public void setNewPrice(double newPrice) {
         this.newPrice = newPrice;
     }
+
+    public boolean changePositive(){
+        return newPrice < price;
+    }
 }

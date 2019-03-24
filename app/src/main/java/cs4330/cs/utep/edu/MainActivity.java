@@ -9,6 +9,8 @@ import android.support.annotation.RequiresApi;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -16,7 +18,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -29,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import cs4330.cs.utep.edu.models.ItemManager;
 import cs4330.cs.utep.edu.models.PriceFinder;
@@ -47,6 +52,9 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         setContentView(R.layout.activity_main);
         Context ctx = getApplicationContext();
         ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
+
+        SearchView filter = (SearchView) findViewById(R.id.filter);
+
 
         this.itm = new ItemManager();
         String text = null;
@@ -68,6 +76,26 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
 
         itemAdapter = new PriceFinderAdapter(this, itm.getList());
         itemsList.setAdapter(itemAdapter);
+        itemsList.setTextFilterEnabled(true);
+
+
+
+//        filter.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                MainActivity.this.itemAdapter.getFilter().filter(s);
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//
+//            }
+//        });
 
         registerForContextMenu(itemsList);
         itemsList.setOnCreateContextMenuListener(this);
@@ -82,7 +110,8 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
 
     public void itemClicked(int position){
         Intent itemIntent = new Intent(this, showItem.class);
-        String itemDataAsString = gson.toJson(itm.getList().get(position)); // Serialize Object to pass it
+        String itemDataAsString = gson.toJson(itm.getList()); // Serialize Object to pass it
+        itemIntent.putExtra("position", position);
         itemIntent.putExtra("itemDataAsString", itemDataAsString);
         startActivity(itemIntent);
     }
@@ -122,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
                 itemClicked(itemPosition);
                 return true;
             case R.id.webpage_item:
-                String url = itemAdapter.getItem(itemPosition).getUrl();
+                String url = itm.getItem(itemPosition).getUrl();
                 if (!url.startsWith("http://") && !url.startsWith("https://"))
                     url = "http://" + url;
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -139,7 +168,12 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
 
     //TODO - save it to JSON so it is consistent with item detail
     private void setValues(int position){
-        itemAdapter.getItem(position).randomPrice();
+        itm.getItem(position).randomPrice();
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         itemAdapter.notifyDataSetChanged();
     }
 
@@ -205,8 +239,8 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         ЕditDialog editDialogFragment = new ЕditDialog();
         Bundle args = new Bundle();
         args.putInt("position", position);
-        args.putString("itemName", itemAdapter.getItem(position).getName());
-        args.putString("itemUrl", itemAdapter.getItem(position).getUrl());
+        args.putString("itemName", itm.getItem(position).getName());
+        args.putString("itemUrl", itm.getItem(position).getUrl());
         editDialogFragment.setArguments(args);
         editDialogFragment.show(fm, "edit_item");
 
@@ -248,6 +282,7 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
             fis = openFileInput(FILE_NAME);
         } catch(FileNotFoundException e){
             Log.d("File not found", FILE_NAME);
+            return null;
         }
         InputStreamReader isr =  new InputStreamReader(fis);
         BufferedReader br = new BufferedReader(isr);

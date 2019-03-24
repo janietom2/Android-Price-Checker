@@ -12,12 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import cs4330.cs.utep.edu.models.Item;
 import cs4330.cs.utep.edu.models.PriceFinder;
@@ -35,11 +37,18 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
         this.items = items;
     }
 
+    @Override
+    public Filter getFilter(){
+        return PriceFinderFilter;
+    }
+
     @SuppressLint("SetTextI18n") // This was added by the IDE
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         View listItem = convertView;
+
+        DecimalFormat f = new DecimalFormat("##.00");
 
         if(listItem == null)
             listItem = LayoutInflater.from(context).inflate(R.layout.items_list,parent,false);
@@ -47,13 +56,11 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
         PriceFinder item = items.get(position); // Get current item(object) on the ArrayList of items
 
         TextView name = (TextView) listItem.findViewById(R.id.itemName);
-        name.setText(item.getName());
+        name.setText(item.getName().toString());
 
         TextView price = (TextView) listItem.findViewById(R.id.itemPrice);
-        price.setText("$"+item.getPrice()+" USD");
+        price.setText("$"+f.format(item.getPrice())+" USD");
 
-
-        DecimalFormat f = new DecimalFormat("##.00");
         String s;
         TextView newPrice = (TextView) listItem.findViewById(R.id.itemPriceNew);
 
@@ -67,11 +74,46 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
         }
         newPrice.setText("$" + f.format(item.getNewPrice()) + " USD (" + s + f.format(item.calculatePrice())+"%)");
 
-        //TO DO:  Add link
-
         return listItem;
 
     }
+
+    private Filter PriceFinderFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            FilterResults results = new FilterResults();
+            List<PriceFinder> suggestions = new ArrayList<>();
+
+            if(constraint == null || constraint.length() == 0 ){
+                suggestions.addAll(items);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (PriceFinder pf : items) {
+                    if(pf.getName().toLowerCase().contains(filterPattern)) {
+                        suggestions.add(pf);
+                    }
+                }
+            }
+
+            results.values = suggestions;
+            results.count = suggestions.size();
+
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            clear();
+            addAll((ArrayList) results.values);
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public CharSequence convertResultToString(Object resultValue) {
+            return ((PriceFinder) resultValue).getName();
+        }
+    };
 
     public int getSize(){
         return items.size();

@@ -28,8 +28,8 @@ public class ЕditDialog extends DialogFragment {
         itemName = DialogView.findViewById(R.id.editTextName);
         itemSource = DialogView.findViewById(R.id.editTextSource);
 
-      //  itemName.setText(getArguments().getString("itemName"));
-      //  itemSource.setText(getArguments().getString("itemUrl"));
+        itemName.setText(getArguments().getString("itemName"));
+        itemSource.setText(getArguments().getString("itemUrl"));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.editDialogTitle);

@@ -10,6 +10,8 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -92,6 +94,18 @@ public class showItem extends FragmentActivity {
         this.itemUrl.setText(this.itm.getItem(position).getUrl());
         diff.setText("Price change: " +f.format(this.itm.getItem(position).calculatePrice())+"%");
 
+        itemUrl.addTextChangedListener(new TextWatcher() {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                itm.getItem(position).setLink(s.toString());
+                try {
+                    save();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            public void afterTextChanged(Editable s) {}});
+
 
         checkPrice.setOnClickListener( view -> {
             this.itm.getItem(position).randomPrice();
@@ -116,10 +130,10 @@ public class showItem extends FragmentActivity {
     }
 
     protected void WebClicked(View view){
-        String url = item.getUrl();
+        String url = this.itm.getItem(position).getUrl();
         if (!url.startsWith("http://") && !url.startsWith("https://"))
             url = "http://" + url;
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(item.getUrl()));
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         try {
             startActivity(browserIntent);
         } catch (ActivityNotFoundException e){

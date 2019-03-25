@@ -98,6 +98,20 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
             }
         });
 
+        String action =getIntent().getAction();
+        String type = getIntent().getType();
+        if (Intent.ACTION_SEND.equalsIgnoreCase(action) && type != null && ("text/plain".equals(type))){
+            String url = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+            FragmentManager fm = getSupportFragmentManager();
+            AddDialog addDialogFragment = new AddDialog();
+            Bundle args = new Bundle();
+            args.putString("url", url);
+            addDialogFragment.setArguments(args);
+            addDialogFragment.show(fm, "add_item");
+
+        }
+
+
 
 
         registerForContextMenu(itemsList);

@@ -22,6 +22,10 @@ public class AddDialog extends DialogFragment {
         View DialogView = inflater.inflate(R.layout.edit_dialog,null);
         itemName = DialogView.findViewById(R.id.editTextName);
         itemSource = DialogView.findViewById(R.id.editTextSource);
+        String url = getArguments().getString("url");
+        itemSource.setText(url);
+
+
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Add Item");

@@ -1,10 +1,15 @@
 package cs4330.cs.utep.edu;
 
+import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,8 +17,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+
+import cs4330.cs.utep.edu.models.ItemManager;
 import cs4330.cs.utep.edu.models.PriceFinder;
 
 
@@ -31,8 +43,14 @@ public class showItem extends FragmentActivity {
     Button editItem;
     Button deleteItem;
 
-    PriceFinder item;
+    private PriceFinder item;
+    private ItemManager itm;
+    private Gson gson;
+    private String FILE_NAME = "items.json";
+    private int position;
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,24 +72,33 @@ public class showItem extends FragmentActivity {
         editItem.setOnClickListener(this::editClicked);
         deleteItem.setOnClickListener(this::deleteClicked);
 
-        Gson gson = new Gson();
+        this.gson = new Gson();
+        this.itm = new ItemManager();
         String itemDataAsString = getIntent().getStringExtra("itemDataAsString");
-        item = gson.fromJson(itemDataAsString, PriceFinder.class);
 
-        this.itemTitle.setText(item.getName());
-        String op = String.valueOf(item.getPrice());
+        ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
+        tmp = gson.fromJson(itemDataAsString, new TypeToken<ArrayList<PriceFinder>>(){}.getType());
+        tmp.forEach(x -> {
+            this.itm.addItem(x);
+        });
+
+        this.position = getIntent().getIntExtra("position", 0);
+
+        this.itemTitle.setText(this.itm.getItem(position).getName());
+        String op = String.valueOf(f.format(this.itm.getItem(position).getPrice()));
+
         this.oldPrice.setText("Initial price: $" + op);
-        this.newPrice.setText("Current Price: " + op);
-        this.itemUrl.setText(item.getUrl());
-        this.diff.setText("Price change: 0.00%");
+        this.newPrice.setText("Current Price: $" + String.valueOf(f.format(this.itm.getItem(position).getNewPrice())));
+        this.itemUrl.setText(this.itm.getItem(position).getUrl());
+        diff.setText("Price change: " +f.format(this.itm.getItem(position).calculatePrice())+"%");
 
 
         checkPrice.setOnClickListener( view -> {
-            item.randomPrice();
-            this.newPrice.setText("Current price: " + f.format(item.getNewPrice()));
+            this.itm.getItem(position).randomPrice();
+            this.newPrice.setText("Current price: $" + f.format(this.itm.getItem(position).getNewPrice()));
             String s;
 
-            if(item.changePositive()) {
+            if(this.itm.getItem(position).changePositive()) {
                 diff.setTextColor(Color.rgb(200, 0, 0));
                 s = "+";
             }
@@ -79,22 +106,92 @@ public class showItem extends FragmentActivity {
                 diff.setTextColor(Color.rgb(0,200,0));
                 s = "-";
             }
-            diff.setText("Price change: " + s + f.format(item.calculatePrice())+"%");
+            diff.setText("Price change: " + s + f.format(this.itm.getItem(position).calculatePrice())+"%");
+            try {
+                save();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         });
     }
 
     protected void WebClicked(View view){
+        String url = item.getUrl();
+        if (!url.startsWith("http://") && !url.startsWith("https://"))
+            url = "http://" + url;
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(item.getUrl()));
-        startActivity(browserIntent);
+        try {
+            startActivity(browserIntent);
+        } catch (ActivityNotFoundException e){
+             Toast.makeText(getBaseContext(), "Webpage " + url + "does not exist", Toast.LENGTH_SHORT).show();
+        }
     }
 
     //TODO - connect with delete method
     protected void deleteClicked(View view){
-        Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+        PriceFinder pf = new PriceFinder();
+        pf = this.itm.getItem(this.position);
+        this.itm.removeItem(pf);
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finish();
     }
 
     //TODO - connect with edit method
     protected void editClicked(View view){
-        Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+        FragmentManager fm = getSupportFragmentManager();
+        ЕditDialog editDialogFragment = new ЕditDialog(2);
+        Bundle args = new Bundle();
+        args.putInt("position", this.position);
+        args.putString("itemName", this.itm.getItem(this.position).getName());
+        args.putString("itemUrl", this.itm.getItem(this.position).getUrl());
+        editDialogFragment.setArguments(args);
+        editDialogFragment.show(fm, "edit_item");
     }
+
+    public void editItem(String name, String source, int position){
+        PriceFinder pf = this.itm.getItem(position);
+        this.itm.editItem(pf, pf.getPrice(), name, source);
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        DecimalFormat f = new DecimalFormat("##.00");
+
+        this.itemTitle.setText(pf.getName());
+        String op = String.valueOf(f.format(pf.getPrice()));
+
+        this.oldPrice.setText("Initial price: $" + op);
+        this.newPrice.setText("Current Price: $" + String.valueOf(f.format(pf.getNewPrice())));
+        this.itemUrl.setText(this.itm.getItem(position).getUrl());
+        diff.setText("Price change: " +f.format(pf.calculatePrice())+"%");
+
+
+    }
+
+
+
+    public void save() throws IOException {
+        FileOutputStream fos = null;
+        String jsonSerial = this.gson.toJson(this.itm.getList());
+
+        try{
+            fos = openFileOutput(FILE_NAME, MODE_PRIVATE);
+            fos.write(jsonSerial.getBytes());
+        }catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fos != null) {
+                fos.close();
+            }
+        }
+    }
+
 }

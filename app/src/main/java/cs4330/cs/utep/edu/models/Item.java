@@ -2,7 +2,7 @@ package cs4330.cs.utep.edu.models;
 
 public class Item {
 
-    private double price;
+    private double price = 0.0;
     private double newPrice;
     private String name;
     private String link;
@@ -11,6 +11,7 @@ public class Item {
 
     public Item(double price, String name, String link) {
         this.price = price;
+        this.newPrice = price;
         this.name = name;
         this.link = link;
     }
@@ -32,9 +33,26 @@ public class Item {
         return this.newPrice;
     }
 
+
     /** Sets **/
+
+    public void setPrice(double price){
+        this.price = price;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
 
     public void setNewPrice(double newPrice) {
         this.newPrice = newPrice;
+    }
+
+    public boolean changePositive(){
+        return newPrice < price;
     }
 }

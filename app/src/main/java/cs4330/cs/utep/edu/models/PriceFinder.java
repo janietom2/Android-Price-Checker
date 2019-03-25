@@ -1,6 +1,6 @@
 package cs4330.cs.utep.edu.models;
 
-public class PriceFinder {
+public class PriceFinder extends Item {
 
     private Item item;
 
@@ -28,6 +28,7 @@ public class PriceFinder {
         return this.item.getNewPrice();
     }
 
+
     public void randomPrice() {
         double MAX_PRICE = 20000.00;
         double MIN_PRICE = 500.00;
@@ -35,12 +36,27 @@ public class PriceFinder {
     }
 
     public double calculatePrice() {
-      //  return ((this.item.getNewPrice() * 100) / this.item.getPrice()) / 10;
         return (this.item.getNewPrice()*100/this.item.getPrice())-100;
     }
 
     public boolean changePositive(){
         return item.getNewPrice() > item.getPrice();
+    }
+
+
+    public void setPrice(double price){
+        item.setPrice(price);
+    }
+
+    public void setName(String name) {
+        item.setName(name);
+    }
+
+    public void setLink(String link){item.setLink(link);
+    }
+
+    public void setNewPrice(double newPrice) {
+        item.setNewPrice(newPrice);
     }
 
 

@@ -10,7 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:id="@+id/searchFilter"
-        android:hint="Search.."/>
+        android:hint="Search.."
+        tools:ignore="MissingConstraints" />
 
     <ListView
         android:id="@+id/items_list"

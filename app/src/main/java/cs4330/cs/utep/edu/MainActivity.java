@@ -44,6 +44,9 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
     private String FILE_NAME = "items.json";
     private Gson gson = new Gson();
     private String jsonText;
+    private EditText filter;
+    ListView itemsList;
+
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -53,8 +56,8 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         Context ctx = getApplicationContext();
         ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
 
-        SearchView filter = (SearchView) findViewById(R.id.filter);
-
+        this.filter = (EditText) findViewById(R.id.searchFilter);
+        this.filter.setVisibility(View.GONE);
 
         this.itm = new ItemManager();
         String text = null;
@@ -63,10 +66,9 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ListView itemsList = (ListView) findViewById(R.id.items_list);
+        this.itemsList = (ListView) findViewById(R.id.items_list);
 
 
-        Log.i("JSON", "onCreate: "+text);
         if(text != null){
             tmp = gson.fromJson(text, new TypeToken<ArrayList<PriceFinder>>(){}.getType());
             tmp.forEach(x -> {
@@ -74,28 +76,29 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
             });
         }
 
-        itemAdapter = new PriceFinderAdapter(this, itm.getList());
-        itemsList.setAdapter(itemAdapter);
-        itemsList.setTextFilterEnabled(true);
+        this.itemAdapter = new PriceFinderAdapter(this, itm.getList());
+        this.itemsList.setAdapter(itemAdapter);
+        this.itemsList.setTextFilterEnabled(true);
 
 
+        filter.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-//        filter.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                MainActivity.this.itemAdapter.getFilter().filter(s);
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable s) {
-//
-//            }
-//        });
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                itemAdapter.getFilter().filter(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
 
         registerForContextMenu(itemsList);
         itemsList.setOnCreateContextMenuListener(this);
@@ -187,10 +190,7 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.filter:
-                Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+                toggleSearchField();
                 return true;
             case R.id.add:
                 showAddDialog();
@@ -203,6 +203,14 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
                 return true;
         }
         return false;
+    }
+
+    public void toggleSearchField() {
+        if(this.filter.getVisibility() == View.VISIBLE) {
+            this.filter.setVisibility(View.GONE);
+        }else{
+            this.filter.setVisibility(View.VISIBLE);
+        }
     }
 
     public void showDeleteDialog(int position){
@@ -231,12 +239,13 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         } catch (IOException e) {
             e.printStackTrace();
         }
-        itemAdapter.notifyDataSetChanged();
+        this.itemAdapter.addItem(pf);
+        this.itemAdapter.notifyDataSetChanged();
     }
 
     public void showEditDialog(int position){
         FragmentManager fm = getSupportFragmentManager();
-        ЕditDialog editDialogFragment = new ЕditDialog();
+        ЕditDialog editDialogFragment = new ЕditDialog(1);
         Bundle args = new Bundle();
         args.putInt("position", position);
         args.putString("itemName", itm.getItem(position).getName());
@@ -248,12 +257,14 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
 
     public void editItem(String name, String source, int position){
         PriceFinder pf = this.itm.getItem(position);
-        this.itm.editItem(pf,this.itm.getItem(position).getPrice(), name, source);
+        this.itm.editItem(pf, pf.getPrice(), name, source);
         try {
             save();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        itemAdapter.editItem(position, name, source);
         itemAdapter.notifyDataSetChanged();
     }
 
@@ -304,7 +315,36 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        this.itemAdapter.removeItem(position);
         itemAdapter.notifyDataSetChanged();
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("Resumend", "Done!");
+        String text = null;
+        itm.clear();
+        ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
+
+        try {
+            text = load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(text != null){
+            tmp = gson.fromJson(text, new TypeToken<ArrayList<PriceFinder>>(){}.getType());
+            tmp.forEach(x -> {
+                itm.addItem(x);
+            });
+        }
+
+
+        this.itemAdapter.notifyDataSetChanged();
     }
 
 

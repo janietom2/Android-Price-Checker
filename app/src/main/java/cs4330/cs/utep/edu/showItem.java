@@ -9,6 +9,7 @@ import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -46,6 +47,7 @@ public class showItem extends FragmentActivity {
     private ItemManager itm;
     private Gson gson;
     private String FILE_NAME = "items.json";
+    private int position;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint("SetTextI18n")
@@ -80,7 +82,7 @@ public class showItem extends FragmentActivity {
             this.itm.addItem(x);
         });
 
-        int position = getIntent().getIntExtra("position", 0);
+        this.position = getIntent().getIntExtra("position", 0);
 
         this.itemTitle.setText(this.itm.getItem(position).getName());
         String op = String.valueOf(f.format(this.itm.getItem(position).getPrice()));
@@ -88,7 +90,7 @@ public class showItem extends FragmentActivity {
         this.oldPrice.setText("Initial price: $" + op);
         this.newPrice.setText("Current Price: $" + String.valueOf(f.format(this.itm.getItem(position).getNewPrice())));
         this.itemUrl.setText(this.itm.getItem(position).getUrl());
-        this.diff.setText("Price change: 0.00%");
+        diff.setText("Price change: " +f.format(this.itm.getItem(position).calculatePrice())+"%");
 
 
         checkPrice.setOnClickListener( view -> {
@@ -127,13 +129,52 @@ public class showItem extends FragmentActivity {
 
     //TODO - connect with delete method
     protected void deleteClicked(View view){
-        Toast.makeText(getBaseContext(), "Blame", Toast.LENGTH_SHORT).show();
+        PriceFinder pf = new PriceFinder();
+        pf = this.itm.getItem(this.position);
+        this.itm.removeItem(pf);
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finish();
     }
 
     //TODO - connect with edit method
     protected void editClicked(View view){
-        Toast.makeText(getBaseContext(), "TBD", Toast.LENGTH_SHORT).show();
+        FragmentManager fm = getSupportFragmentManager();
+        ЕditDialog editDialogFragment = new ЕditDialog(2);
+        Bundle args = new Bundle();
+        args.putInt("position", this.position);
+        args.putString("itemName", this.itm.getItem(this.position).getName());
+        args.putString("itemUrl", this.itm.getItem(this.position).getUrl());
+        editDialogFragment.setArguments(args);
+        editDialogFragment.show(fm, "edit_item");
     }
+
+    public void editItem(String name, String source, int position){
+        PriceFinder pf = this.itm.getItem(position);
+        this.itm.editItem(pf, pf.getPrice(), name, source);
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        DecimalFormat f = new DecimalFormat("##.00");
+
+        this.itemTitle.setText(pf.getName());
+        String op = String.valueOf(f.format(pf.getPrice()));
+
+        this.oldPrice.setText("Initial price: $" + op);
+        this.newPrice.setText("Current Price: $" + String.valueOf(f.format(pf.getNewPrice())));
+        this.itemUrl.setText(this.itm.getItem(position).getUrl());
+        diff.setText("Price change: " +f.format(pf.calculatePrice())+"%");
+
+
+    }
+
+
 
     public void save() throws IOException {
         FileOutputStream fos = null;

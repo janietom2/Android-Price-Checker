@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,12 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cs4330.cs.utep.edu.models.Item;
+import cs4330.cs.utep.edu.models.ItemManager;
 import cs4330.cs.utep.edu.models.PriceFinder;
 
 public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
 
     private Context context;
     private ArrayList<PriceFinder> items;
+    ArrayList<PriceFinder> tmpItems;
+    ArrayList<PriceFinder> suggestions;
     private static LayoutInflater inflater = null;
 
 
@@ -35,6 +39,23 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
         super(context, 0, items);
         this.context = context;
         this.items = items;
+        this.tmpItems = new ArrayList<PriceFinder>(items);
+        this.suggestions = new ArrayList<PriceFinder>(items);
+    }
+
+    public void addItem(PriceFinder pf) {
+        this.tmpItems.add(pf);
+    }
+
+    public void editItem(int position, String name, String url) {
+        PriceFinder tmp = this.tmpItems.get(position);
+        tmp.setName(name);
+        tmp.setLink(url);
+    }
+
+    public void removeItem(Integer position) {
+        PriceFinder tmp = this.tmpItems.get(position);
+        this.tmpItems.remove(tmp);
     }
 
     @Override
@@ -79,44 +100,49 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
     }
 
     private Filter PriceFinderFilter = new Filter() {
+
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-            FilterResults results = new FilterResults();
-            List<PriceFinder> suggestions = new ArrayList<>();
 
-            if(constraint == null || constraint.length() == 0 ){
-                suggestions.addAll(items);
-            } else {
-                String filterPattern = constraint.toString().toLowerCase().trim();
-
-                for (PriceFinder pf : items) {
-                    if(pf.getName().toLowerCase().contains(filterPattern)) {
+            if (constraint != null) {
+                suggestions.clear();
+                for (PriceFinder pf : tmpItems) {
+                    String filterPattern = constraint.toString().toLowerCase().trim();
+                    if (pf.getName().toLowerCase().contains(filterPattern)) {
                         suggestions.add(pf);
                     }
                 }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = suggestions;
+                filterResults.count = suggestions.size();
+                return filterResults;
+            } else {
+                return new FilterResults();
             }
 
-            results.values = suggestions;
-            results.count = suggestions.size();
-
-            return results;
         }
 
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            clear();
-            addAll((ArrayList) results.values);
-            notifyDataSetChanged();
-        }
+            ArrayList<PriceFinder> p = (ArrayList<PriceFinder>) results.values;
 
-        @Override
-        public CharSequence convertResultToString(Object resultValue) {
-            return ((PriceFinder) resultValue).getName();
+            if (results.count > 0) {
+                clear();
+                for (PriceFinder pf : p) {
+                    add(pf);
+                    notifyDataSetChanged();
+                }
+            } else {
+                clear();
+                notifyDataSetChanged();
+            }
+
         }
     };
 
-    public int getSize(){
+
+    public int getSize() {
         return items.size();
     }
-
 }

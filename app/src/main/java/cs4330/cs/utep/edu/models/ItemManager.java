@@ -31,6 +31,10 @@ public class ItemManager {
         return false;
     }
 
+    public void clear(){
+        this.itemsList.clear();
+    }
+
     public Boolean editItem(PriceFinder it, double price, String name, String weblink){
         if(this.itemsList.contains(it)){
             it.setName(name);

@@ -25,11 +25,6 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/filter"
-        android:title="Filter"
-        app:showAsAction="never" />
-
-    <item
         android:id="@id/search"
         android:icon="@android:drawable/ic_menu_search"
         android:title="Search"

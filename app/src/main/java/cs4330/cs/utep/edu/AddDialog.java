@@ -22,7 +22,7 @@ public class AddDialog extends DialogFragment {
         View DialogView = inflater.inflate(R.layout.edit_dialog,null);
         itemName = DialogView.findViewById(R.id.editTextName);
         itemSource = DialogView.findViewById(R.id.editTextSource);
-        String url = getArguments().getString("url");
+        String url = getArguments() != null ? getArguments().getString("url") : null;
         itemSource.setText(url);
 
 

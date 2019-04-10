@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        Context ctx = getApplicationContext();
         String text                = null;
         ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
         this.filter                = findViewById(R.id.searchFilter);
@@ -80,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         this.itemsList.setAdapter(itemAdapter);
         this.itemsList.setTextFilterEnabled(true);
 
+        // Create search filter
         filter.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {

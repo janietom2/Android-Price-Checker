@@ -32,7 +32,6 @@ public class ЕditDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         super.onCreateDialog(savedInstanceState);
 
-
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View DialogView = inflater.inflate(R.layout.edit_dialog,null);
 
@@ -67,7 +66,7 @@ public class ЕditDialog extends DialogFragment {
                         public void onClick(DialogInterface dialog, int id) {
                             String name = itemName.getText().toString();
                             String source = itemSource.getText().toString();
-                            ((showItem) getActivity()).editItem(name, source, getArguments().getInt("position"));
+                            ((showItem) getActivity()).editItem(name, source, getArguments().getInt("position"), "");
                             dialog.dismiss();
                         }
                     })

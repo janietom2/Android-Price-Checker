@@ -6,7 +6,6 @@ package cs4330.cs.utep.edu.models;
  * @author Jose Nieto
  */
 
-
 import java.util.ArrayList;
 
 public class ItemManager {
@@ -53,7 +52,6 @@ public class ItemManager {
         return false;
     }
 
-
     public PriceFinder getItem(int key){
         return this.itemsList.get(key);
     }
@@ -61,6 +59,5 @@ public class ItemManager {
     public ArrayList<PriceFinder> getList(){
         return this.itemsList;
     }
-
 
 }

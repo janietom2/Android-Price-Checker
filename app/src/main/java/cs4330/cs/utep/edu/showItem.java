@@ -166,9 +166,9 @@ public class showItem extends FragmentActivity {
         editDialogFragment.show(fm, "edit_item");
     }
 
-    public void editItem(String name, String source, int position){
+    public void editItem(String name, String source, int position, String image){
         PriceFinder pf = this.itm.getItem(position);
-        this.itm.editItem(pf, pf.getPrice(), name, source);
+        this.itm.editItem(pf, pf.getPrice(), name, source, image);
         try {
             save();
         } catch (IOException e) {
@@ -184,8 +184,6 @@ public class showItem extends FragmentActivity {
         this.newPrice.setText("Current Price: $" + String.valueOf(f.format(pf.getNewPrice())));
         this.itemUrl.setText(this.itm.getItem(position).getUrl());
         diff.setText("Price change: " +f.format(pf.calculatePrice())+"%");
-
-
     }
 
 

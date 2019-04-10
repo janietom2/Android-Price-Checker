@@ -1,11 +1,18 @@
 package cs4330.cs.utep.edu.models;
 
+/**
+ *
+ * Item class gets each individual item properties and will load them into a PriceFinder Object
+ * @Author Jose Nieto
+ */
+
 public class Item {
 
     private double price = 0.0;
     private double newPrice;
     private String name;
     private String link;
+    private String image;
 
     Item(){}
 
@@ -16,13 +23,20 @@ public class Item {
         this.link = link;
     }
 
-    /** Gets **/
+    //================================================================================
+    // Gets
+    //================================================================================
+
     public String getName() {
         return this.name;
     }
 
     public String getLink(){
         return this.link;
+    }
+
+    public String getImage(){
+        return this.image;
     }
 
     public double getPrice(){
@@ -33,8 +47,9 @@ public class Item {
         return this.newPrice;
     }
 
-
-    /** Sets **/
+    //================================================================================
+    // Sets
+    //================================================================================
 
     public void setPrice(double price){
         this.price = price;
@@ -47,6 +62,8 @@ public class Item {
     public void setLink(String link) {
         this.link = link;
     }
+
+    public void setImage(String image) {this.image = image;}
 
     public void setNewPrice(double newPrice) {
         this.newPrice = newPrice;

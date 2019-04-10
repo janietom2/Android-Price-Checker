@@ -1,5 +1,6 @@
 package cs4330.cs.utep.edu;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
+@SuppressLint("ValidFragment")
 public class ЕditDialog extends DialogFragment {
 
 
@@ -21,6 +23,7 @@ public class ЕditDialog extends DialogFragment {
     Activity getActivity;
     int activityId;
 
+    @SuppressLint("ValidFragment")
     public ЕditDialog(int id){
         this.activityId = id;
     }
@@ -39,8 +42,6 @@ public class ЕditDialog extends DialogFragment {
         itemName.setText(getArguments().getString("itemName"));
         itemSource.setText(getArguments().getString("itemUrl"));
 
-
-
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.editDialogTitle);
 
@@ -51,7 +52,7 @@ public class ЕditDialog extends DialogFragment {
                         public void onClick(DialogInterface dialog, int id) {
                             String name = itemName.getText().toString();
                             String source = itemSource.getText().toString();
-                            ((MainActivity) getActivity()).editItem(name, source, getArguments().getInt("position"));
+                            ((MainActivity) getActivity()).editItem(name, source, getArguments().getInt("position"), "");
                             dialog.dismiss();
                         }
                     })

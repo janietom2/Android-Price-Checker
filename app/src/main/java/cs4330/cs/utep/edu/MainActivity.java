@@ -47,28 +47,28 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
     private EditText filter;
     ListView itemsList;
 
-
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Context ctx = getApplicationContext();
+//        Context ctx = getApplicationContext();
+        String text                = null;
         ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
-
-        this.filter = (EditText) findViewById(R.id.searchFilter);
+        this.filter                = findViewById(R.id.searchFilter);
+        this.itm                   = new ItemManager();
         this.filter.setVisibility(View.GONE);
 
-        this.itm = new ItemManager();
-        String text = null;
+        // Load into text "items.json" string (If exist)
         try {
             text = load();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.itemsList = (ListView) findViewById(R.id.items_list);
 
+        this.itemsList = findViewById(R.id.items_list);
 
+        // Convert text (json text) into objects to load into the adapter list
         if(text != null){
             tmp = gson.fromJson(text, new TypeToken<ArrayList<PriceFinder>>(){}.getType());
             tmp.forEach(x -> {
@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         this.itemAdapter = new PriceFinderAdapter(this, itm.getList());
         this.itemsList.setAdapter(itemAdapter);
         this.itemsList.setTextFilterEnabled(true);
-
 
         filter.addTextChangedListener(new TextWatcher() {
             @Override
@@ -98,8 +97,8 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
             }
         });
 
-        String action =getIntent().getAction();
-        String type = getIntent().getType();
+        String action = getIntent().getAction();
+        String type   = getIntent().getType();
         if (Intent.ACTION_SEND.equalsIgnoreCase(action) && type != null && ("text/plain".equals(type))){
             String url = getIntent().getStringExtra(Intent.EXTRA_TEXT);
             FragmentManager fm = getSupportFragmentManager();
@@ -110,9 +109,6 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
             addDialogFragment.show(fm, "add_item");
 
         }
-
-
-
 
         registerForContextMenu(itemsList);
         itemsList.setOnCreateContextMenuListener(this);
@@ -125,6 +121,10 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
 
     }
 
+    /**
+     * Method to get which PriceItem object (item) gets clicked in the ListView
+     * @param position
+     */
     public void itemClicked(int position){
         Intent itemIntent = new Intent(this, showItem.class);
         String itemDataAsString = gson.toJson(itm.getList()); // Serialize Object to pass it
@@ -133,6 +133,45 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         startActivity(itemIntent);
     }
 
+
+    /**
+     * This method is on Android's API, which on restoring the app (if closed or paused) will
+     * reload and/or load
+     */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("Resumend", "Done!");
+        String text = null;
+        itm.clear();
+        ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
+
+        try {
+            text = load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(text != null){
+            tmp = gson.fromJson(text, new TypeToken<ArrayList<PriceFinder>>(){}.getType());
+            tmp.forEach(x -> {
+                itm.addItem(x);
+            });
+        }
+        this.itemAdapter.notifyDataSetChanged();
+    }
+
+    //================================================================================
+    // Menus and UI methods
+    //================================================================================
+
+    /**
+     * Method to create context menu (General)
+     * @param menu
+     * @param v
+     * @param menuInfo
+     */
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
@@ -140,16 +179,23 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         inflater.inflate(R.menu.context_menu, menu);
     }
 
-
-
+    /**
+     * Method to create options menu
+     * @param menu of the app
+     * @return true if everything loads correctly
+     */
     public boolean onCreateOptionsMenu(Menu menu) {
-        // super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu,menu);
         return true;
     }
 
-    //TODO - connect edit method
+
+    /**
+     * Method to create context menu on selected item on ListView
+     * @param item selected
+     * @return if input exist true
+     */
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
@@ -183,24 +229,11 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         }
     }
 
-    //TODO - save it to JSON so it is consistent with item detail
-    private void setValues(int position){
-        itm.getItem(position).randomPrice();
-        try {
-            save();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        itemAdapter.notifyDataSetChanged();
-    }
-
-    private void reloadItems(){
-        for(int i = 0; i < itemAdapter.getSize(); i++){
-            setValues(i);
-        }
-    }
-
-    //TODO - implement search, filter and settings
+    /**
+     * Menu of options
+     * @param item clicked
+     * @return true if option exist, false if don't
+     */
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search:
@@ -219,6 +252,9 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         return false;
     }
 
+    /**
+     * This method will toggle the EditText field for searching on the ListView of the Items
+     */
     public void toggleSearchField() {
         if(this.filter.getVisibility() == View.VISIBLE) {
             this.filter.setVisibility(View.GONE);
@@ -227,21 +263,16 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         }
     }
 
-    public void showDeleteDialog(int position){
-        FragmentManager fm = getSupportFragmentManager();
-        DeleteDialog deleteDialogFragment = new DeleteDialog();
-        Bundle args = new Bundle();
-        args.putInt("position", position);
-        deleteDialogFragment.setArguments(args);
-        deleteDialogFragment.show(fm, "delete_item");
-    }
+    //================================================================================
+    // Item management | CRUD
+    //================================================================================
 
-    public void showAddDialog(){
-        FragmentManager fm = getSupportFragmentManager();
-        AddDialog addDialogFragment = new AddDialog();
-        addDialogFragment.show(fm, "add_item");
-    }
-
+    /**
+     * Add PriceFinder into ItemManager and save it into "items.json"
+     * @param name of the PriceFinder object
+     * @param source link of the PriceFinder Object
+     *
+     */
     public void addItem(String name, String source){
         double MAX_PRICE = 20000.00;
         double MIN_PRICE = 500.00;
@@ -257,21 +288,16 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         this.itemAdapter.notifyDataSetChanged();
     }
 
-    public void showEditDialog(int position){
-        FragmentManager fm = getSupportFragmentManager();
-        ЕditDialog editDialogFragment = new ЕditDialog(1);
-        Bundle args = new Bundle();
-        args.putInt("position", position);
-        args.putString("itemName", itm.getItem(position).getName());
-        args.putString("itemUrl", itm.getItem(position).getUrl());
-        editDialogFragment.setArguments(args);
-        editDialogFragment.show(fm, "edit_item");
-
-    }
-
-    public void editItem(String name, String source, int position){
+    /**
+     * Updates PriceFinder object in ItemManager
+     * @param name of the PriceFinder Item to be updated
+     * @param source Link of the PriceFinder Item to be updated
+     * @param position position of PriceFinder in ItemManager to be updated
+     * @param image Link of image of the PriceFinder Item to be updated
+     */
+    public void editItem(String name, String source, int position, String image){
         PriceFinder pf = this.itm.getItem(position);
-        this.itm.editItem(pf, pf.getPrice(), name, source);
+        this.itm.editItem(pf, pf.getPrice(), name, source, image);
         try {
             save();
         } catch (IOException e) {
@@ -282,6 +308,96 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         itemAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Creates a new price in Pricefinder object in ItemManager and saves it in JSON file
+     * @param position of Pricefinder Object in  ItemManager
+     */
+    private void setValues(int position){
+        itm.getItem(position).randomPrice();
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        itemAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * Reload the prices of all PriceFinder objects
+     */
+    private void reloadItems(){
+        for(int i = 0; i < itemAdapter.getSize(); i++){
+            setValues(i);
+        }
+    }
+
+    //================================================================================
+    // Dialogs
+    //================================================================================
+
+    /**
+     * Pops a dialog for delete a PriceFinder Object
+     * @param position in the PriceFinder in ItemManager(ArrayList)
+     */
+    public void showDeleteDialog(int position){
+        FragmentManager fm = getSupportFragmentManager();
+        DeleteDialog deleteDialogFragment = new DeleteDialog();
+        Bundle args = new Bundle();
+        args.putInt("position", position);
+        deleteDialogFragment.setArguments(args);
+        deleteDialogFragment.show(fm, "delete_item");
+    }
+
+    /**
+     * Shows a dialog to add a PriceFinder object and adds it to ItemManager
+     */
+    public void showAddDialog(){
+        FragmentManager fm = getSupportFragmentManager();
+        AddDialog addDialogFragment = new AddDialog();
+        addDialogFragment.show(fm, "add_item");
+    }
+
+    /**
+     * Pops a dialog to edit PriceFinder properties (Name, URL)
+     * @param position in the arraylist ItemManager
+     */
+    public void showEditDialog(int position){
+        FragmentManager fm = getSupportFragmentManager();
+        ЕditDialog editDialogFragment = new ЕditDialog(1);
+        Bundle args = new Bundle();
+        args.putInt("position", position);
+        args.putString("itemName", itm.getItem(position).getName());
+        args.putString("itemUrl", itm.getItem(position).getUrl());
+        editDialogFragment.setArguments(args);
+        editDialogFragment.show(fm, "edit_item");
+    }
+
+    /**
+     * Pops a dialog for delete a PriceFinder Object
+     * @param position in the PriceFinder in ItemManager(ArrayList)
+     */
+    public void DeleteItemDialog(int position){
+        PriceFinder pf = new PriceFinder();
+        pf = this.itm.getItem(position);
+        this.itm.removeItem(pf);
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        this.itemAdapter.removeItem(position);
+        itemAdapter.notifyDataSetChanged();
+    }
+
+    //================================================================================
+    // Write & Load offline information
+    //================================================================================
+
+    /**
+     * Saves the instance of the Itemmanager (items) into a JSON file "items.json"
+     * @throws IOException
+     */
     public void save() throws IOException {
         FileOutputStream fos = null;
         String jsonSerial = this.gson.toJson(this.itm.getList());
@@ -300,6 +416,11 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         }
     }
 
+    /**
+     * Loads "items.json" into a String format. Reads the file and convert JSON to a String
+     * @return JSON from "items.json" in String format
+     * @throws IOException
+     */
     public String load() throws IOException {
         FileInputStream fis = null;
 
@@ -319,47 +440,5 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
 
         return sb.toString();
     }
-
-    public void DeleteItemDialog(int position){
-        PriceFinder pf = new PriceFinder();
-        pf = this.itm.getItem(position);
-        this.itm.removeItem(pf);
-        try {
-            save();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.itemAdapter.removeItem(position);
-        itemAdapter.notifyDataSetChanged();
-
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i("Resumend", "Done!");
-        String text = null;
-        itm.clear();
-        ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
-
-        try {
-            text = load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if(text != null){
-            tmp = gson.fromJson(text, new TypeToken<ArrayList<PriceFinder>>(){}.getType());
-            tmp.forEach(x -> {
-                itm.addItem(x);
-            });
-        }
-
-
-        this.itemAdapter.notifyDataSetChanged();
-    }
-
 
 }

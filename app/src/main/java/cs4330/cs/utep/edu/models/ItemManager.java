@@ -1,5 +1,12 @@
 package cs4330.cs.utep.edu.models;
 
+/**
+ * ItemManager class will contain multiple PriceFinder Objects, and will be used to provide the list
+ * of PriceFinder objects. Also provide methods to add, update, delete PriceFinder objects.
+ * @author Jose Nieto
+ */
+
+
 import java.util.ArrayList;
 
 public class ItemManager {
@@ -35,11 +42,12 @@ public class ItemManager {
         this.itemsList.clear();
     }
 
-    public Boolean editItem(PriceFinder it, double price, String name, String weblink){
+    public Boolean editItem(PriceFinder it, double price, String name, String weblink, String image){
         if(this.itemsList.contains(it)){
             it.setName(name);
             it.setPrice(price);
             it.setLink(weblink);
+            it.setImage(image);
             return true;
         }
         return false;

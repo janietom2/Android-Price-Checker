@@ -1,5 +1,11 @@
 package cs4330.cs.utep.edu.models;
 
+/**
+ * PriceFinder class will do the operations of each item such as Create, Update, Read, Delete.
+ * Also will update the price
+ * @author Jose Nieto
+ */
+
 public class PriceFinder extends Item {
 
     private Item item;
@@ -20,6 +26,8 @@ public class PriceFinder extends Item {
         return this.item.getLink();
     }
 
+    public String getImage() { return this.item.getImage(); }
+
     public double getPrice() {
         return this.item.getPrice();
     }
@@ -27,7 +35,6 @@ public class PriceFinder extends Item {
     public double getNewPrice(){
         return this.item.getNewPrice();
     }
-
 
     public void randomPrice() {
         double MAX_PRICE = 20000.00;
@@ -43,7 +50,6 @@ public class PriceFinder extends Item {
         return item.getNewPrice() > item.getPrice();
     }
 
-
     public void setPrice(double price){
         item.setPrice(price);
     }
@@ -52,12 +58,12 @@ public class PriceFinder extends Item {
         item.setName(name);
     }
 
-    public void setLink(String link){item.setLink(link);
-    }
+    public void setLink(String link){item.setLink(link);}
 
     public void setNewPrice(double newPrice) {
         item.setNewPrice(newPrice);
     }
 
+    public void setImage(String image) {item.setImage(image);}
 
 }

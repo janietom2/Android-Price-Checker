@@ -43,6 +43,18 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
         this.suggestions = new ArrayList<PriceFinder>(items);
     }
 
+
+    //================================================================================
+    // CRUD while results being filtered
+    //================================================================================
+
+    /**
+     * Note: This CRUD methods work to update the list created for search.
+     * For example, if a new item is added, this will also update the list that will be searched
+     * hence needs to be update in order to user to search for the new items
+     * for deleting and updating processes.
+     */
+
     public void addItem(PriceFinder pf) {
         this.tmpItems.add(pf);
     }
@@ -101,6 +113,12 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
 
     private Filter PriceFinderFilter = new Filter() {
 
+        /**
+         * Method will do a search of the items (PriceFinder object name) and add them into a
+         * temporal arraylist that will only contain objects that are related to users serach
+         * @param constraint
+         * @return FilterResults which contains the different results of the serach
+         */
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
 
@@ -123,6 +141,11 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
 
         }
 
+        /**
+         * Method to publish the filtered results of the search on the Arraylist of PriceFinder objects
+         * @param constraint
+         * @param results of the filtered search
+         */
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
             ArrayList<PriceFinder> p = (ArrayList<PriceFinder>) results.values;

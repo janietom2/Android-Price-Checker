@@ -3,8 +3,11 @@ package cs4330.cs.utep.edu;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -57,6 +60,14 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         this.filter                = findViewById(R.id.searchFilter);
         this.itm                   = new ItemManager();
         this.filter.setVisibility(View.GONE);
+
+        // Check network connection
+        if (isNetworkOn()) {
+             Toast.makeText(getBaseContext(), "Welcome", Toast.LENGTH_SHORT).show();
+        } else {
+             showNetWorkDialog();
+             Toast.makeText(getBaseContext(), "You are Offline", Toast.LENGTH_SHORT).show();
+        }
 
         // Load into text "items.json" string (If exist)
         try {
@@ -189,7 +200,6 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         inflater.inflate(R.menu.options_menu,menu);
         return true;
     }
-
 
     /**
      * Method to create context menu on selected item on ListView
@@ -357,6 +367,12 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         addDialogFragment.show(fm, "add_item");
     }
 
+    public void showNetWorkDialog(){
+        FragmentManager fm = getSupportFragmentManager();
+        WifiDialog addDialogFragment = new WifiDialog();
+        addDialogFragment.show(fm, "wifi_dialog");
+    }
+
     /**
      * Pops a dialog to edit PriceFinder properties (Name, URL)
      * @param position in the arraylist ItemManager
@@ -398,7 +414,7 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
      * Saves the instance of the Itemmanager (items) into a JSON file "items.json"
      * @throws IOException
      */
-    public void save() throws IOException {
+    private void save() throws IOException {
         FileOutputStream fos = null;
         String jsonSerial = this.gson.toJson(this.itm.getList());
 
@@ -421,7 +437,7 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
      * @return JSON from "items.json" in String format
      * @throws IOException
      */
-    public String load() throws IOException {
+    private String load() throws IOException {
         FileInputStream fis = null;
 
         try {
@@ -439,6 +455,17 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         }
 
         return sb.toString();
+    }
+
+    //================================================================================
+    // Network
+    //================================================================================
+
+    private Boolean isNetworkOn() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED;
+
     }
 
 }

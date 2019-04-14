@@ -19,4 +19,6 @@
     <string name="no">NO</string>
     <string name="deleteDialogTitle">Delete</string>
     <string name="editDialogTitle">Edit Item</string>
+    <string name="networkDialog">You are not connected to the Internet, you wan to turn of Wi-Fi?</string>
+    <string name="networkDialogTitle">Connect to Internet</string>
 </resources>

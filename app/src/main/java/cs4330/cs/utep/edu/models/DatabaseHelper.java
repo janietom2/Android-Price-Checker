@@ -27,7 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insert(String name, String link, double price, double newPrice, String image) {
+    public boolean insertData(String name, String link, double price, double newPrice, String image) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(COL[1], name);

@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.StrictMode;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.os.Bundle;
@@ -23,6 +25,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -35,22 +38,25 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Locale;
 
 import cs4330.cs.utep.edu.models.DatabaseHelper;
 import cs4330.cs.utep.edu.models.ItemManager;
 import cs4330.cs.utep.edu.models.PriceFinder;
+import cs4330.cs.utep.edu.models.WebParser;
 
-public class MainActivity extends AppCompatActivity implements DeleteDialog.DeleteDialogListener {
+public class  MainActivity extends AppCompatActivity implements DeleteDialog.DeleteDialogListener {
 
     private DatabaseHelper appDb;
-    private ItemManager itm;
-    private PriceFinderAdapter itemAdapter;
+    public ItemManager itm;
+    public PriceFinderAdapter itemAdapter;
     private String FILE_NAME = "items.json";
     private Gson gson = new Gson();
     private String jsonText;
     private EditText filter;
+    private ProgressBar progressBar;
     ListView itemsList;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -126,7 +132,6 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
             args.putString("url", url);
             addDialogFragment.setArguments(args);
             addDialogFragment.show(fm, "add_item");
-
         }
 
         registerForContextMenu(itemsList);
@@ -282,28 +287,42 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
     }
 
     //================================================================================
+    // Async Tasks
+    //================================================================================
+
+
+
+    //================================================================================
     // Item management | CRUD
     //================================================================================
 
     /**
      * Add PriceFinder into ItemManager and save it into "items.json"
-     * @param name of the PriceFinder object
      * @param source link of the PriceFinder Object
      *
      */
-    public void addItem(String name, String source){
-        double MAX_PRICE = 20000.00;
-        double MIN_PRICE = 500.00;
-        double price = (Math.random() * (MAX_PRICE - MIN_PRICE) + 1 + MIN_PRICE);
-        PriceFinder pf = new PriceFinder(name, source, price);
-        itm.addItem(pf);
-        try {
-            save();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        this.itemAdapter.addItem(pf);
-        this.itemAdapter.notifyDataSetChanged();
+    public void addItem(String source) {
+//        double MAX_PRICE = 20000.00;
+//        double MIN_PRICE = 500.00;
+//        double price = (Math.random() * (MAX_PRICE - MIN_PRICE) + 1 + MIN_PRICE);
+
+        Log.i("SOURCE", source);
+        AddItemSync asynctask = new AddItemSync();
+        asynctask.url = source;
+        asynctask.execute();
+
+        Log.i("PRICE", String.valueOf(asynctask.price));
+//        Log.i("NAME", asynctask.name);
+
+//        PriceFinder pf = new PriceFinder(asynctask.name, source, asynctask.price);
+//        itm.addItem(pf);
+//        try {
+//            save();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        this.itemAdapter.addItem(pf);
+//        this.itemAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -390,7 +409,6 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
         ЕditDialog editDialogFragment = new ЕditDialog(1);
         Bundle args = new Bundle();
         args.putInt("position", position);
-        args.putString("itemName", itm.getItem(position).getName());
         args.putString("itemUrl", itm.getItem(position).getUrl());
         editDialogFragment.setArguments(args);
         editDialogFragment.show(fm, "edit_item");

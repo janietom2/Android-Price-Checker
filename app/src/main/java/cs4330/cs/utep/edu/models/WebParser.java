@@ -19,9 +19,9 @@ public class WebParser {
     private Document doc;
     private String store;
 
-    WebParser(String url) throws IOException, URISyntaxException {
+    public WebParser(String url) throws IOException, URISyntaxException {
         // Pase URL
-        this.doc = Jsoup.connect(url).userAgent("Opera").get();
+        this.doc = Jsoup.connect(url).timeout(0).userAgent("Opera").get();
         this.store = getDomainName(url);
     }
 
@@ -32,12 +32,12 @@ public class WebParser {
      * @return Array of Strings with the price
      * @throws IOException
      */
-    private String webPrice() throws IOException {
+    private String webPrice() throws IOException, URISyntaxException {
 
         StringBuilder stringPrice = new StringBuilder();
 
 
-        switch (this.store) {
+        switch (getDomainName(this.store)) {
             case "homedepot.com":
                 int counter               = 0;
 
@@ -47,18 +47,21 @@ public class WebParser {
                 // Fill array for 3 parts
                 for(Element nw : priceParts){
                     if(counter != 0) {
-                        stringPrice.append(nw.text());
+                        if(counter == 1) {
+                            stringPrice.append(nw.text());
+                            stringPrice.append(".");
+                        }else {
+                            stringPrice.append(nw.text());
+                        }
                     }
                     counter++;
                 }
-
                 break;
 
             case "walmart.com":
                 Element wpricepart = doc.select(".price-characteristic").first();
                 stringPrice.append(wpricepart.attr("content"));
                 break;
-
         }
 
         return stringPrice.toString();
@@ -88,6 +91,14 @@ public class WebParser {
         URI uri = new URI(url);
         String domain = uri.getHost();
         return domain.startsWith("www.") ? domain.substring(4) : domain;
+    }
+
+    public double getPrice() throws IOException, URISyntaxException {
+        return Double.parseDouble(webPrice());
+    }
+
+    public String getName() throws IOException {
+        return productName();
     }
 
 

@@ -308,10 +308,10 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
 
         Log.i("SOURCE", source);
         AddItemSync asynctask = new AddItemSync();
-        asynctask.url = source;
+        asynctask.setUrl(source);
         asynctask.execute();
 
-        Log.i("PRICE", String.valueOf(asynctask.price));
+        Log.i("PRICE", String.valueOf(asynctask.getPrice()));
 //        Log.i("NAME", asynctask.name);
 
 //        PriceFinder pf = new PriceFinder(asynctask.name, source, asynctask.price);

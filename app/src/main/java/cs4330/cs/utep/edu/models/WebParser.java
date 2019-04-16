@@ -37,7 +37,7 @@ public class WebParser {
         StringBuilder stringPrice = new StringBuilder();
 
 
-        switch (getDomainName(this.store)) {
+        switch (this.store) {
             case "homedepot.com":
                 int counter               = 0;
 

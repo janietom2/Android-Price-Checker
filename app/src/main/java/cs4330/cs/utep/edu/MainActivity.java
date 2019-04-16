@@ -38,10 +38,13 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import cs4330.cs.utep.edu.models.DatabaseHelper;
 import cs4330.cs.utep.edu.models.ItemManager;
 import cs4330.cs.utep.edu.models.PriceFinder;
 
 public class MainActivity extends AppCompatActivity implements DeleteDialog.DeleteDialogListener {
+
+    private DatabaseHelper appDb;
     private ItemManager itm;
     private PriceFinderAdapter itemAdapter;
     private String FILE_NAME = "items.json";
@@ -55,10 +58,15 @@ public class MainActivity extends AppCompatActivity implements DeleteDialog.Dele
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Variables
+        appDb                      = new DatabaseHelper(this);
         String text                = null;
         ArrayList<PriceFinder> tmp = new ArrayList<PriceFinder>();
         this.filter                = findViewById(R.id.searchFilter);
         this.itm                   = new ItemManager();
+
+        // Set visibility of search bar off from the beginning
         this.filter.setVisibility(View.GONE);
 
         // Check network connection

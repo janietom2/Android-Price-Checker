@@ -11,14 +11,18 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class WebParser {
 
     private Document doc;
+    private String store;
 
-    WebParser(String url) throws IOException {
+    WebParser(String url) throws IOException, URISyntaxException {
         // Pase URL
         this.doc = Jsoup.connect(url).userAgent("Opera").get();
+        this.store = getDomainName(url);
     }
 
     /**
@@ -28,20 +32,37 @@ public class WebParser {
      * @return Array of Strings with the price
      * @throws IOException
      */
-    private String[] webPrice() throws IOException {
-        String[] price = new String[3];
-        int counter    = 0;
+    private String webPrice() throws IOException {
 
-        // Get Price from web
-        Elements priceParts = this.doc.select("#ajaxPrice span");
+        StringBuilder stringPrice = new StringBuilder();
 
-        // Fill array for 3 parts
-        for(Element nw : priceParts){
-            price[counter] = nw.text();
-            counter++;
+
+        switch (this.store) {
+            case "homedepot.com":
+                int counter               = 0;
+
+                // Get Price from web
+                Elements priceParts = this.doc.select("#ajaxPrice span");
+
+                // Fill array for 3 parts
+                for(Element nw : priceParts){
+                    if(counter != 0) {
+                        stringPrice.append(nw.text());
+                    }
+                    counter++;
+                }
+
+                break;
+
+            case "walmart.com":
+                Element wpricepart = doc.select(".price-characteristic").first();
+                stringPrice.append(wpricepart.attr("content"));
+                break;
+
         }
 
-        return price;
+        return stringPrice.toString();
+
     }
 
     /**
@@ -56,5 +77,18 @@ public class WebParser {
         // Print Name
         return name.text();
     }
+
+    /**
+     * Method will return the domain name from the URL
+     * @param url URL from the website
+     * @return String containing the domainName.com/net/co/org etc..
+     * @throws URISyntaxException
+     */
+    public static String getDomainName(String url) throws URISyntaxException {
+        URI uri = new URI(url);
+        String domain = uri.getHost();
+        return domain.startsWith("www.") ? domain.substring(4) : domain;
+    }
+
 
 }

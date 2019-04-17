@@ -35,7 +35,7 @@ public class ЕditDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View DialogView = inflater.inflate(R.layout.edit_dialog,null);
 
-        itemName = DialogView.findViewById(R.id.editTextName);
+//        itemName = DialogView.findViewById(R.id.editTextName);
         itemSource = DialogView.findViewById(R.id.editTextSource);
 
         itemName.setText(getArguments().getString("itemName"));

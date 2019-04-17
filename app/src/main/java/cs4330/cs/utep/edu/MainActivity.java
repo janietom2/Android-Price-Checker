@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -91,23 +92,30 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
         }
 
         // Load into text "items.json" string (If exist)
-        try {
-            text = load();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(!isNetworkOn()) {
+
+            try {
+                text = load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            this.itemsList = findViewById(R.id.items_list);
+
+            // Convert text (json text) into objects to load into the adapter list
+            if (text != null) {
+                tmp = gson.fromJson(text, new TypeToken<ArrayList<PriceFinder>>() {
+                }.getType());
+                tmp.forEach(x -> {
+                    this.itm.addItem(x);
+                });
+            }
+        } else {
+            this.itemsList = findViewById(R.id.items_list);
+            this.itm = loadFromDB();
         }
 
-        this.itemsList = findViewById(R.id.items_list);
-
-        // Convert text (json text) into objects to load into the adapter list
-        if(text != null){
-            tmp = gson.fromJson(text, new TypeToken<ArrayList<PriceFinder>>(){}.getType());
-            tmp.forEach(x -> {
-                itm.addItem(x);
-            });
-        }
-
-        this.itemAdapter = new PriceFinderAdapter(this, itm.getList());
+        this.itemAdapter = new PriceFinderAdapter(this, this.itm.getList());
         this.itemsList.setAdapter(itemAdapter);
         this.itemsList.setTextFilterEnabled(true);
 
@@ -153,9 +161,18 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
     }
 
     public void doAsync(String url){
-         AddItemSync ais = new AddItemSync();
-         ais.setUrl(url);
-         ais.execute();
+        if(!isNetworkOn()){
+            showNetWorkDialog();
+        }
+        if(isNetworkOn()) {
+            AddItemSync ais = new AddItemSync();
+            ais.setUrl(url);
+            ais.execute();
+        } else{
+            Toast.makeText(getBaseContext(), "Need Internet to work!", Toast.LENGTH_LONG).show();
+
+        }
+
     }
 
     //================================================================================
@@ -164,14 +181,12 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
 
     public class AddItemSync extends AsyncTask<Void, Void, Void> {
 
-
         String stringPrice = null;
         String name = null;
         String url = "";
         Boolean error = false;
         String image = null;
         ProgressDialog pd = new ProgressDialog(MainActivity.this);
-
 
         public void setUrl(String url) {
             this.url = url;
@@ -194,22 +209,15 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
         protected Void doInBackground(Void... voids) {
 
             try {
-
                 switch(getDomainName(this.url)){
-
                     case "neimanmarcus.com":
                         Document doc = Jsoup.connect(this.url).userAgent("Opera").get();
                         Element price = doc.select(".retailPrice").first();
                         this.name = doc.title();
-
-
                         this.stringPrice = price.text();
                         String filter1 = this.stringPrice.replace("$", "");
                         this.stringPrice = filter1.replace(",","");
-
                         Elements img = doc.select("div.slick-slide img");
-
-
                         int c = 0;
 
                         for(Element e : img){
@@ -222,8 +230,6 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
 
                         this.image = this.image.replace("//","");
                         this.image = "http://"+this.image;
-
-
                         break;
 
                     case "racquetballwarehouse.com":
@@ -242,25 +248,35 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
 
                         break;
 
+                    case "homedepot.com":
+                        Document doc3 = Jsoup.connect(this.url).ignoreHttpErrors(true)
+                            .timeout(30000).get();
+                        StringBuilder sb = new StringBuilder();
+                        int counter = 0;
+                        Elements priceParts = doc3.select("#ajaxPrice span");
+                        this.stringPrice = "";
+                        for(Element e1: priceParts){
+                            if(counter > 0){
+//                                sb.append(e1.text());
+                                this.stringPrice += e1.text();
+                            }
+                            if(counter == 1) {
+                                this.stringPrice += ".";
+                            }
+                            counter++;
+                        }
+
+                        System.out.println(this.stringPrice);
+                        this.name = doc3.title();
+//                        this.name = "depot";
+                        this.image = "none";
+
+                    break;
+
                     default:
                         this.error = true;
                         break;
-
                 }
-
-//                int counter = 0;
-
-//                for(Element nw : priceParts){
-//                    if(counter != 0) {
-//                        if(counter == 1) {
-//                            this.stringPrice.append(nw.text());
-//                            this.stringPrice.append(".");
-//                        }else {
-//                            this.stringPrice.append(nw.text());
-//                        }
-//                    }
-//                    counter++;
-//                }
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -270,6 +286,7 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
 
             return null;
         }
+
         @Override
         protected void onPostExecute(Void s) {
             super.onPostExecute(s);
@@ -278,7 +295,7 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
             if(this.error){
                 Toast.makeText(getBaseContext(), "Store not supported yet!", Toast.LENGTH_LONG).show();
             }else {
-                addItem(this.url, Double.valueOf(String.valueOf(this.stringPrice)), this.name, this.image);
+                addItem(this.url, Double.valueOf(this.stringPrice), this.name, this.image);
             }
 
         }
@@ -289,7 +306,6 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
         }
 
     }
-
 
     /**
      * Method to get which PriceItem object (item) gets clicked in the ListView
@@ -302,7 +318,6 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
         itemIntent.putExtra("itemDataAsString", itemDataAsString);
         startActivity(itemIntent);
     }
-
 
     /**
      * This method is on Android's API, which on restoring the app (if closed or paused) will
@@ -432,8 +447,6 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
         }
     }
 
-
-
     //================================================================================
     // Item management | CRUD
     //================================================================================
@@ -444,14 +457,13 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
      *
      */
     public void addItem(String source, double price, String name, String image) {
-//        double MAX_PRICE = 20000.00;
-//        double MIN_PRICE = 500.00;
-//        double price = (Math.random() * (MAX_PRICE - MIN_PRICE) + 1 + MIN_PRICE);
-
         Log.i("SOURCE", source);
 
-        PriceFinder pf = new PriceFinder(name, source, price, image);
+        appDb.insertData(name, source, price, 0.0, image);
+
+        PriceFinder pf = new PriceFinder(name, source, price, image, appDb.lastId());
         itm.addItem(pf);
+
         try {
             save();
         } catch (IOException e) {
@@ -557,6 +569,7 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
     public void DeleteItemDialog(int position){
         PriceFinder pf = new PriceFinder();
         pf = this.itm.getItem(position);
+        appDb.delete(pf.getId());
         this.itm.removeItem(pf);
         try {
             save();
@@ -617,6 +630,23 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
         }
 
         return sb.toString();
+    }
+
+    private ItemManager loadFromDB(){
+
+        ItemManager itmDb = new ItemManager();
+        Cursor response = appDb.fetchAllData();
+
+        Log.i("Count", String.valueOf(response.getCount()));
+        if(response.getCount() == 0) {
+            Toast.makeText(getBaseContext(), "Add new products", Toast.LENGTH_LONG).show();
+        }
+
+        while(response.moveToNext()) {
+            PriceFinder tmp = new PriceFinder(response.getString(1), response.getString(3), response.getDouble(2), response.getString(4), response.getString(0));
+            Log.i("Added? ", String.valueOf(itmDb.addItem(tmp)));
+        }
+        return itmDb;
     }
 
     //================================================================================

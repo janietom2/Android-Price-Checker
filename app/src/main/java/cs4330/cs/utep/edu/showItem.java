@@ -15,11 +15,13 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.squareup.picasso.Picasso;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -45,6 +47,8 @@ public class showItem extends FragmentActivity {
     Button editItem;
     Button deleteItem;
 
+    ImageView imageView;
+
     private PriceFinder item;
     private ItemManager itm;
     private Gson gson;
@@ -52,7 +56,7 @@ public class showItem extends FragmentActivity {
     private int position;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +73,7 @@ public class showItem extends FragmentActivity {
         this.openWebpage = (Button) findViewById(R.id.btnWebItem);
         this.editItem = (Button) findViewById(R.id.btnEditItem);
         this.deleteItem = (Button) findViewById(R.id.btnDeleteItem);
+        this.imageView = (ImageView) findViewById(R.id.imageView);
 
         openWebpage.setOnClickListener(this::WebClicked);
         editItem.setOnClickListener(this::editClicked);
@@ -93,6 +98,10 @@ public class showItem extends FragmentActivity {
         this.newPrice.setText("Current Price: $" + String.valueOf(f.format(this.itm.getItem(position).getNewPrice())));
         this.itemUrl.setText(this.itm.getItem(position).getUrl());
         diff.setText("Price change: " +f.format(this.itm.getItem(position).calculatePrice())+"%");
+
+        if(this.itm.getItem(position).getImage().contains("jpg") || this.itm.getItem(position).getImage().contains("png")){
+            Picasso.get().load(this.itm.getItem(position).getImage()).into(imageView);
+        }
 
         itemUrl.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

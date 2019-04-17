@@ -13,15 +13,17 @@ public class Item {
     private String name;
     private String link;
     private String image;
+    private String id;
 
     Item(){}
 
-    public Item(double price, String name, String link, String image) {
+    public Item(double price, String name, String link, String image, String id) {
         this.price = price;
         this.newPrice = price;
         this.name = name;
         this.link = link;
         this.image = image;
+        this.id = id;
     }
 
     //================================================================================
@@ -47,6 +49,8 @@ public class Item {
     public double getNewPrice(){
         return this.newPrice;
     }
+
+    public String getId(){return this.id;}
 
     //================================================================================
     // Sets

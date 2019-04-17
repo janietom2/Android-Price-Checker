@@ -14,8 +14,8 @@ public class PriceFinder extends Item {
 
     }
 
-    public PriceFinder(String name, String url, double price, String image) {
-        this.item = new Item(price, name, url, image);
+    public PriceFinder(String name, String url, double price, String image, String id) {
+        this.item = new Item(price, name, url, image, id);
     }
 
     public String getName(){
@@ -35,6 +35,8 @@ public class PriceFinder extends Item {
     public double getNewPrice(){
         return this.item.getNewPrice();
     }
+
+    public String getId() {return this.item.getId(); }
 
     public void randomPrice() {
         double MAX_PRICE = 20000.00;

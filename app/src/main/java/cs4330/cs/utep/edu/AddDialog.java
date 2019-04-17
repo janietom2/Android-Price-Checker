@@ -29,7 +29,6 @@ public class AddDialog extends DialogFragment {
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View DialogView = inflater.inflate(R.layout.edit_dialog,null);
-        pb = DialogView.findViewById(R.id.progressBar);
         itemSource = DialogView.findViewById(R.id.editTextSource);
         String url = getArguments() != null ? getArguments().getString("url") : null;
         itemSource.setText(url);

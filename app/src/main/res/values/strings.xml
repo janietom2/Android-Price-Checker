@@ -4,7 +4,7 @@
     <string name="currentPrice">Current price:</string>
     <string name="itemName">Item name</string>
     <string name="initialPrice">Initial price:</string>
-    <string name="source">Source:</string>
+    <string name="source">Link:</string>
     <string name="url">Copy URL</string>
     <string name="calculateButton">Reload price</string>
     <string name="edit">Edit</string>

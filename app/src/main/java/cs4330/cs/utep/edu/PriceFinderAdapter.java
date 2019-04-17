@@ -100,7 +100,9 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
         TextView newPrice = (TextView) listItem.findViewById(R.id.itemPriceNew);
 
         ImageView iconImage = (ImageView) listItem.findViewById(R.id.productIcon);
-        Picasso.get().load(item.getImage()).into(iconImage);
+        if(item.getImage().contains("jpg") || item.getImage().contains("png")){
+            Picasso.get().load(item.getImage()).into(iconImage);
+        }
 
         if(item.changePositive()) {
             newPrice.setTextColor(Color.rgb(200, 0, 0));

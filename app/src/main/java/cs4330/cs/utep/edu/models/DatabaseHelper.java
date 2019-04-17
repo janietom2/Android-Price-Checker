@@ -2,6 +2,7 @@ package cs4330.cs.utep.edu.models;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -38,5 +39,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long result = db.insert(TABLE_NAME, null, contentValues);
 
         return result != -1;
+    }
+
+    private Cursor fetchData(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor response = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+        return response;
+    }
+
+    public Cursor fetchAllData(){
+        return fetchData();
+    }
+
+    private Integer deletedata(String id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_NAME, "i_id = ?", new String[] {id});
+    }
+
+    public Integer delete(String id) {
+        return deletedata(id);
+    }
+
+    public String lastId(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String selectQuery = "SELECT  * FROM " + "sqlite_sequence";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        cursor.moveToLast();
+        return cursor.getString(0);
     }
 }

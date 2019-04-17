@@ -40,7 +40,7 @@ public class AddDialog extends DialogFragment {
                 .setPositiveButton("Add", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         String url = itemSource.getText().toString();
-                            ((MainActivity) Objects.requireNonNull(getActivity())).addItem(url);
+                        ((MainActivity) Objects.requireNonNull(getActivity())).doAsync(url);
                         dialog.dismiss();
                     }
                 })

@@ -14,8 +14,8 @@ public class PriceFinder extends Item {
 
     }
 
-    public PriceFinder(String name, String url, double price) {
-        this.item = new Item(price, name, url);
+    public PriceFinder(String name, String url, double price, String image) {
+        this.item = new Item(price, name, url, image);
     }
 
     public String getName(){

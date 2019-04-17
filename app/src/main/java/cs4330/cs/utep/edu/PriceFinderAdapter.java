@@ -17,6 +17,8 @@ import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -96,6 +98,9 @@ public class PriceFinderAdapter extends ArrayAdapter<PriceFinder> {
 
         String s;
         TextView newPrice = (TextView) listItem.findViewById(R.id.itemPriceNew);
+
+        ImageView iconImage = (ImageView) listItem.findViewById(R.id.productIcon);
+        Picasso.get().load(item.getImage()).into(iconImage);
 
         if(item.changePositive()) {
             newPrice.setTextColor(Color.rgb(200, 0, 0));

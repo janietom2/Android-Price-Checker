@@ -16,7 +16,7 @@
         android:text="TextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.093"
-        app:layout_constraintStart_toEndOf="@+id/imageView2"
+        app:layout_constraintStart_toEndOf="@+id/productIcon"
         app:layout_constraintTop_toBottomOf="@+id/itemPrice" />
 
     <TextView
@@ -29,7 +29,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@+id/imageView2"
+        app:layout_constraintStart_toEndOf="@+id/productIcon"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
 
@@ -45,12 +45,12 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.093"
-        app:layout_constraintStart_toEndOf="@+id/imageView2"
+        app:layout_constraintStart_toEndOf="@+id/productIcon"
         app:layout_constraintTop_toBottomOf="@+id/itemName"
         app:layout_constraintVertical_bias="0.0" />
 
     <ImageView
-        android:id="@+id/imageView2"
+        android:id="@+id/productIcon"
         android:layout_width="106dp"
         android:layout_height="92dp"
         android:layout_marginStart="16dp"

@@ -39,7 +39,7 @@ public class WebParser {
 
         switch (this.store) {
             case "homedepot.com":
-                int counter               = 0;
+                int counter = 0;
 
                 // Get Price from web
                 Elements priceParts = this.doc.select("#ajaxPrice span");

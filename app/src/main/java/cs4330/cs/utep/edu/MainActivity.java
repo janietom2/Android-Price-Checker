@@ -1,5 +1,6 @@
 package cs4330.cs.utep.edu;
 
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -32,12 +33,18 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -144,6 +151,145 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
         itemAdapter.setNotifyOnChange(true);
 
     }
+
+    public void doAsync(String url){
+         AddItemSync ais = new AddItemSync();
+         ais.setUrl(url);
+         ais.execute();
+    }
+
+    //================================================================================
+    // Async
+    //================================================================================
+
+    public class AddItemSync extends AsyncTask<Void, Void, Void> {
+
+
+        String stringPrice = null;
+        String name = null;
+        String url = "";
+        Boolean error = false;
+        String image = null;
+        ProgressDialog pd = new ProgressDialog(MainActivity.this);
+
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        public String getDomainName(String url) throws URISyntaxException {
+            URI uri = new URI(url);
+            String domain = uri.getHost();
+            return domain.startsWith("www.") ? domain.substring(4) : domain;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            this.pd.setMessage("loading");
+            this.pd.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            try {
+
+                switch(getDomainName(this.url)){
+
+                    case "neimanmarcus.com":
+                        Document doc = Jsoup.connect(this.url).userAgent("Opera").get();
+                        Element price = doc.select(".retailPrice").first();
+                        this.name = doc.title();
+
+
+                        this.stringPrice = price.text();
+                        String filter1 = this.stringPrice.replace("$", "");
+                        this.stringPrice = filter1.replace(",","");
+
+                        Elements img = doc.select("div.slick-slide img");
+
+
+                        int c = 0;
+
+                        for(Element e : img){
+                            if(c == 0){
+                                this.image = (e.attr("src"));
+                                break;
+                            }
+                            c++;
+                        }
+
+                        this.image = this.image.replace("//","");
+                        this.image = "http://"+this.image;
+
+
+                        break;
+
+                    case "racquetballwarehouse.com":
+                        Document doc2 = Jsoup.connect(this.url).userAgent("Opera").get();
+                        Element price2 = doc2.select(".commanum").first();
+                        this.name = doc2.title();
+
+                        Elements img2 = doc2.select("img.mainimage");
+
+                        for(Element e : img2){
+                            this.image = (e.attr("src"));
+                        }
+
+                        this.stringPrice = price2.text();
+                        this.name = doc2.title();
+
+                        break;
+
+                    default:
+                        this.error = true;
+                        break;
+
+                }
+
+//                int counter = 0;
+
+//                for(Element nw : priceParts){
+//                    if(counter != 0) {
+//                        if(counter == 1) {
+//                            this.stringPrice.append(nw.text());
+//                            this.stringPrice.append(".");
+//                        }else {
+//                            this.stringPrice.append(nw.text());
+//                        }
+//                    }
+//                    counter++;
+//                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Void s) {
+            super.onPostExecute(s);
+            pd.dismiss();
+
+            if(this.error){
+                Toast.makeText(getBaseContext(), "Store not supported yet!", Toast.LENGTH_LONG).show();
+            }else {
+                addItem(this.url, Double.valueOf(String.valueOf(this.stringPrice)), this.name, this.image);
+            }
+
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+    }
+
 
     /**
      * Method to get which PriceItem object (item) gets clicked in the ListView
@@ -286,10 +432,6 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
         }
     }
 
-    //================================================================================
-    // Async Tasks
-    //================================================================================
-
 
 
     //================================================================================
@@ -301,28 +443,22 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
      * @param source link of the PriceFinder Object
      *
      */
-    public void addItem(String source) {
+    public void addItem(String source, double price, String name, String image) {
 //        double MAX_PRICE = 20000.00;
 //        double MIN_PRICE = 500.00;
 //        double price = (Math.random() * (MAX_PRICE - MIN_PRICE) + 1 + MIN_PRICE);
 
         Log.i("SOURCE", source);
-        AddItemSync asynctask = new AddItemSync();
-        asynctask.setUrl(source);
-        asynctask.execute();
 
-        Log.i("PRICE", String.valueOf(asynctask.getPrice()));
-//        Log.i("NAME", asynctask.name);
-
-//        PriceFinder pf = new PriceFinder(asynctask.name, source, asynctask.price);
-//        itm.addItem(pf);
-//        try {
-//            save();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        this.itemAdapter.addItem(pf);
-//        this.itemAdapter.notifyDataSetChanged();
+        PriceFinder pf = new PriceFinder(name, source, price, image);
+        itm.addItem(pf);
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.itemAdapter.addItem(pf);
+        this.itemAdapter.notifyDataSetChanged();
     }
 
     /**

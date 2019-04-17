@@ -16,11 +16,12 @@ public class Item {
 
     Item(){}
 
-    public Item(double price, String name, String link) {
+    public Item(double price, String name, String link, String image) {
         this.price = price;
         this.newPrice = price;
         this.name = name;
         this.link = link;
+        this.image = image;
     }
 
     //================================================================================

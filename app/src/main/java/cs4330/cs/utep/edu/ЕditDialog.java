@@ -33,13 +33,17 @@ public class ЕditDialog extends DialogFragment {
         super.onCreateDialog(savedInstanceState);
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View DialogView = inflater.inflate(R.layout.edit_dialog,null);
+        View DialogView = inflater.inflate(R.layout.edit_item_dialog,null);
 
-//        itemName = DialogView.findViewById(R.id.editTextName);
-        itemSource = DialogView.findViewById(R.id.editTextSource);
+        itemName = DialogView.findViewById(R.id.editTextItem);
+
+        itemSource = DialogView.findViewById(R.id.editTextSourceItem);
 
         itemName.setText(getArguments().getString("itemName"));
+
         itemSource.setText(getArguments().getString("itemUrl"));
+
+        String id = getArguments().getString("id");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.editDialogTitle);
@@ -51,7 +55,7 @@ public class ЕditDialog extends DialogFragment {
                         public void onClick(DialogInterface dialog, int id) {
                             String name = itemName.getText().toString();
                             String source = itemSource.getText().toString();
-                            ((MainActivity) getActivity()).editItem(name, source, getArguments().getInt("position"), "");
+                            ((MainActivity) getActivity()).editItem(name, source, getArguments().getInt("position"), "", String.valueOf(id));
                             dialog.dismiss();
                         }
                     })
@@ -66,7 +70,7 @@ public class ЕditDialog extends DialogFragment {
                         public void onClick(DialogInterface dialog, int id) {
                             String name = itemName.getText().toString();
                             String source = itemSource.getText().toString();
-                            ((showItem) getActivity()).editItem(name, source, getArguments().getInt("position"), "");
+                            ((showItem) getActivity()).editItem(name, source, getArguments().getInt("position"), "", String.valueOf(id));
                             dialog.dismiss();
                         }
                     })

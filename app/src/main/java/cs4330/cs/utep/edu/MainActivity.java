@@ -10,8 +10,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.StrictMode;
-import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -28,13 +26,11 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -49,12 +45,10 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import cs4330.cs.utep.edu.models.DatabaseHelper;
 import cs4330.cs.utep.edu.models.ItemManager;
 import cs4330.cs.utep.edu.models.PriceFinder;
-import cs4330.cs.utep.edu.models.WebParser;
 
 public class  MainActivity extends AppCompatActivity implements DeleteDialog.DeleteDialogListener {
 
@@ -115,6 +109,8 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
             this.itemsList = findViewById(R.id.items_list);
             this.itm = loadFromDB();
         }
+
+        Log.i("Name", this.itm.getItem(1).getName());
 
         this.itemAdapter = new PriceFinderAdapter(this, this.itm.getList());
         this.itemsList.setAdapter(itemAdapter);
@@ -208,7 +204,6 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
 
         @Override
         protected Void doInBackground(Void... voids) {
-
             try {
                 switch(getDomainName(this.url)){
                     case "neimanmarcus.com":
@@ -254,7 +249,7 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
                                 .userAgent("Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30")
                                 .cookie("zip", "79902")
                                 .get();
-                        
+
                         StringBuilder sb = new StringBuilder();
                         int counter = 0;
                         Elements priceParts = doc3.select("#ajaxPrice span");
@@ -297,7 +292,7 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
             super.onPostExecute(s);
             pd.dismiss();
 
-            Log.i("NAME", this.name);
+//            Log.i("NAME", this.name);
 //            Log.i("PRICE", this.stringPrice);
 //            Log.i("IMAGE", this.image);
 
@@ -305,7 +300,7 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
                 Toast.makeText(getBaseContext(), "Request Timeout", Toast.LENGTH_LONG).show();
             } else {
                 if(this.error){
-                    Toast.makeText(getBaseContext(), "Store not supported yet!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getBaseContext(), "Store not supported yet! Or Invalid URL", Toast.LENGTH_LONG).show();
                 }else {
                     addItem(this.url, Double.valueOf(this.stringPrice), this.name, this.image);
                 }
@@ -494,8 +489,9 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
      * @param position position of PriceFinder in ItemManager to be updated
      * @param image Link of image of the PriceFinder Item to be updated
      */
-    public void editItem(String name, String source, int position, String image){
+    public void editItem(String name, String source, int position, String image, String id){
         PriceFinder pf = this.itm.getItem(position);
+        appDb.edit(id, name, source);
         this.itm.editItem(pf, pf.getPrice(), name, source, image);
         try {
             save();
@@ -572,6 +568,8 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
         Bundle args = new Bundle();
         args.putInt("position", position);
         args.putString("itemUrl", itm.getItem(position).getUrl());
+        args.putString("itemName", itm.getItem(position).getName());
+        args.putString("id", itm.getItem(position).getId());
         editDialogFragment.setArguments(args);
         editDialogFragment.show(fm, "edit_item");
     }

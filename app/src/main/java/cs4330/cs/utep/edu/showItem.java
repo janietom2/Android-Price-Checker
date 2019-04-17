@@ -175,7 +175,7 @@ public class showItem extends FragmentActivity {
         editDialogFragment.show(fm, "edit_item");
     }
 
-    public void editItem(String name, String source, int position, String image){
+    public void editItem(String name, String source, int position, String image, String id){
         PriceFinder pf = this.itm.getItem(position);
         this.itm.editItem(pf, pf.getPrice(), name, source, image);
         try {

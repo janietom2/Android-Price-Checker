@@ -12,7 +12,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_NAME = "pw_items";
     private static final String[] COL = {"i_id", "i_name", "i_price", "i_weblink", "i_image", "i_newprice"};
 
-
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
     }
@@ -37,7 +36,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL[4], image);
         contentValues.put(COL[5], newPrice);
         long result = db.insert(TABLE_NAME, null, contentValues);
-
         return result != -1;
     }
 
@@ -47,13 +45,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return response;
     }
 
-    public Cursor fetchAllData(){
-        return fetchData();
-    }
 
     private Integer deletedata(String id){
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(TABLE_NAME, "i_id = ?", new String[] {id});
+    }
+
+    private boolean editData(String id, String name, String link) {
+        //{"i_id", "i_name", "i_price", "i_weblink", "i_image", "i_newprice"};
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COL[1], name);
+        contentValues.put(COL[3], link);
+        db.update(TABLE_NAME, contentValues, "i_id = ?", new String[] {id});
+        return true;
+    }
+
+    public boolean edit(String id, String name, String link) {
+        return editData(id, name, link);
+    }
+
+        public Cursor fetchAllData(){
+        return fetchData();
     }
 
     public Integer delete(String id) {

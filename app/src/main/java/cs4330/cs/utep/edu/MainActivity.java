@@ -34,6 +34,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -249,8 +250,11 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
                         break;
 
                     case "homedepot.com":
-                        Document doc3 = Jsoup.connect(this.url).ignoreHttpErrors(true)
-                            .timeout(30000).get();
+                        Document doc3 = Jsoup.connect(this.url).timeout(0)
+                                .userAgent("Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30")
+                                .cookie("zip", "79902")
+                                .get();
+                        
                         StringBuilder sb = new StringBuilder();
                         int counter = 0;
                         Elements priceParts = doc3.select("#ajaxPrice span");
@@ -265,12 +269,13 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
                             }
                             counter++;
                         }
-
                         System.out.println(this.stringPrice);
                         this.name = doc3.title();
-//                        this.name = "depot";
-                        this.image = "none";
 
+                        Elements img3 = doc3.select("img#mainImage");
+                        for(Element e3 : img3) {
+                            this.image = (img3.attr("src"));
+                        }
                     break;
 
                     default:
@@ -292,11 +297,20 @@ public class  MainActivity extends AppCompatActivity implements DeleteDialog.Del
             super.onPostExecute(s);
             pd.dismiss();
 
-            if(this.error){
-                Toast.makeText(getBaseContext(), "Store not supported yet!", Toast.LENGTH_LONG).show();
-            }else {
-                addItem(this.url, Double.valueOf(this.stringPrice), this.name, this.image);
+            Log.i("NAME", this.name);
+//            Log.i("PRICE", this.stringPrice);
+//            Log.i("IMAGE", this.image);
+
+            if(this.url == null || this.stringPrice == null || this.name == null || this.image == null){
+                Toast.makeText(getBaseContext(), "Request Timeout", Toast.LENGTH_LONG).show();
+            } else {
+                if(this.error){
+                    Toast.makeText(getBaseContext(), "Store not supported yet!", Toast.LENGTH_LONG).show();
+                }else {
+                    addItem(this.url, Double.valueOf(this.stringPrice), this.name, this.image);
+                }
             }
+
 
         }
 
